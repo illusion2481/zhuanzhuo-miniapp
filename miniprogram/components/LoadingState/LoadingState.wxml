@@ -1,0 +1,4 @@
+<view class="loading">
+  <t-loading theme="circular" size="48rpx" />
+  <text class="loading-tip">{{tip}}</text>
+</view>

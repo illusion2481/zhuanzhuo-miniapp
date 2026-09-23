@@ -1,0 +1,228 @@
+<view class="page">
+  <view class="page-title">我的预约</view>
+
+  <!-- 即将开始提醒（应用内，无需订阅消息） -->
+  <view wx:if="{{upcoming}}" class="upcoming-banner">
+    <text class="upcoming-icon">⏰</text>
+    <view class="upcoming-text">
+      <text class="upcoming-seat">{{upcoming.seatLabel}}</text>
+      <text class="upcoming-desc">{{upcoming.text}}</text>
+    </view>
+  </view>
+
+  <view class="tab-row">
+    <view
+      wx:for="{{tabs}}"
+      wx:key="key"
+      class="tab-chip {{activeTab === item.key ? 'tab-chip--active' : ''}}"
+      data-key="{{item.key}}"
+      bind:tap="onSwitchTab"
+    >
+      <text>{{item.label}}</text>
+    </view>
+  </view>
+
+  <loading-state wx:if="{{loading}}" tip="加载预约…" />
+
+  <error-state
+    wx:elif="{{loadError}}"
+    title="加载失败"
+    description="{{loadError}}"
+    action-text="重试"
+    bind:action="onRetryLoad"
+  />
+
+  <view wx:elif="{{!items.length}}" class="empty-tip">
+    <empty-state
+      title="暂无{{activeLabel}}预约"
+      description="去首页或自习室列表发起一次预约试试"
+      icon="📋"
+    />
+  </view>
+
+  <view wx:else class="reservation-list list-in">
+    <view wx:for="{{items}}" wx:key="_id" class="reservation-card" data-id="{{item._id}}">
+      <view class="reservation-head">
+        <view class="reservation-seat">
+          <text class="reservation-seat__name">{{item.seatLabel}}</text>
+          <text wx:if="{{item.roomName}}" class="reservation-seat__room">{{item.roomName}}</text>
+        </view>
+        <text class="reservation-status reservation-status--{{item.displayStatus}}">{{item.statusLabel}}</text>
+      </view>
+
+      <view class="reservation-countdown reservation-countdown--{{item.countdownLevel}}">{{item.countdown}}</view>
+
+      <!-- 违约倒计时：超时未签到 / 暂离超时都会被自动释放座位并记违约 -->
+      <view wx:if="{{item.releaseText}}" class="release-banner release-banner--{{item.releaseLevel}}">
+        <text class="release-banner__icon">{{item.releaseLevel === 'released' ? '⛔' : '⏳'}}</text>
+        <text class="release-banner__text">{{item.releaseText}}</text>
+      </view>
+
+      <view class="reservation-time">
+        <text>开始：{{item.startLabel}}</text>
+        <text>结束：{{item.endLabel}}</text>
+      </view>
+      <text wx:if="{{item.goal}}" class="reservation-goal">学习目标：{{item.goal}}</text>
+
+      <!-- ⚠️ 这里曾放过「本人签到二维码」，2026-09-19 按用户要求删除：
+           ① 它是个纯文本二维码（非微信小程序码），别人扫了也打不开小程序，
+              真要签到扫的是店内座位码 / 店员码，展示自己的码实际没人扫；
+           ② 内容与下方「手动签到 / 扫码签到」按钮重复。
+           签到动作统一走下方操作区，不要再往这里加二维码。 -->
+
+      <!-- 已过签到时限：明确告知不可再签到，避免用户反复尝试后才发现座位已释放 -->
+      <view
+        wx:elif="{{item.status === 'pending_checkin' && !item.canCheckin}}"
+        class="checkin-closed"
+      >
+        <text class="checkin-closed__text">已超过签到时限，无法再签到。该座位已释放，如需继续使用请重新预约。</text>
+      </view>
+
+      <!-- 操作区：主行动 1 个 + 「更多」折叠次级。
+           2026-09-19 重构：原来是 3~4 个等宽按钮平铺，且「手动签到/扫码签到」是同一
+           动作的两个入口。现在签到只留一个按钮（走定位围栏），其余低频/破坏性操作收起。 -->
+      <view wx:if="{{item.primary || item.more.length}}" class="reservation-actions">
+        <button
+          wx:if="{{item.primary}}"
+          class="btn btn--primary"
+          data-id="{{item._id}}"
+          data-type="{{item.primary.type}}"
+          bindtap="onAction"
+          disabled="{{submitting}}"
+        >{{item.primary.label}}</button>
+        <view
+          wx:if="{{item.more.length}}"
+          class="more-toggle"
+          data-id="{{item._id}}"
+          bind:tap="onToggleMore"
+        >{{expandedId === item._id ? '收起' : '更多'}}</view>
+      </view>
+      <view wx:if="{{expandedId === item._id && item.more.length}}" class="reservation-actions reservation-actions--more">
+        <button
+          wx:for="{{item.more}}"
+          wx:key="type"
+          wx:for-item="act"
+          class="btn btn--ghost"
+          data-id="{{item._id}}"
+          data-type="{{act.type}}"
+          bindtap="onAction"
+          disabled="{{submitting}}"
+        >{{act.label}}</button>
+      </view>
+
+      <view wx:if="{{item.room_id}}" class="reservation-foot">
+        <text class="map-link" data-room-id="{{item.room_id}}" data-room-name="{{item.roomName}}" bind:tap="goSeatMap">查看座位地图 ›</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ═══ 以下四个弹层全部为原生自绘（遮罩 + 底部面板） ═══
+       ⚠️ 不用 t-popup：真机上 TDesign 弹层渲染不可靠（内容平铺在页面底部、
+       按钮渲染成空色块）。也不用 wx.showModal：原生确认框的 await 会丢失
+       点击手势，之后调 wx.requestSubscribeMessage 必报 TAP gesture 失败。
+       这里「确认取消」是真实 tap，回调里同步先拉授权再走云函数。
+
+       ⚠️ 开关统一走单一字段 `sheet`（'' | 'cancel' | 'extend' | 'review' | 'reschedule'），
+       刻意不用四个独立布尔量：以前四个开关各自为政，任何一个残留 true 就会让
+       对应面板常驻在列表下方，看起来像「页面上多出来的一块」，且按钮点了没反馈。
+       单字段天然保证同一时刻最多只有一个弹层。
+       外壳样式 .sheet-mask / .sheet-panel 在 myReservations.scss，缺了会退化成平铺块。 -->
+
+  <!-- 取消 / 结束使用确认 -->
+  <view wx:if="{{sheet === 'cancel'}}" class="sheet-mask" bind:tap="onCloseCancel">
+    <view class="sheet-panel" catch:tap="noop">
+      <view class="confirm-sheet">
+        <view class="confirm-title">{{cancelTitle}}</view>
+        <view class="confirm-text">{{cancelText}}</view>
+        <view wx:if="{{!cancelIsActive}}" class="confirm-note">取消后本时段座位立即释放，可随时重新预约；未开始的预约取消不计违约。</view>
+        <view class="confirm-actions">
+          <view class="confirm-btn confirm-btn--ghost" bind:tap="onCloseCancel">再想想</view>
+          <view class="confirm-btn {{cancelIsActive ? 'confirm-btn--danger' : 'confirm-btn--primary'}}" bind:tap="onConfirmCancel">{{cancelConfirmText}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 续时：使用中可延长结束时间（30/60/90 分钟） -->
+  <view wx:if="{{sheet === 'extend'}}" class="sheet-mask" bind:tap="onCloseExtend">
+    <view class="sheet-panel" catch:tap="noop">
+      <view class="reschedule-sheet">
+        <view class="reschedule-title">续时 · {{extendSeat || '当前座位'}}</view>
+        <view class="extend-note">选择要延长的时间，座位将按新结束时间继续保留。</view>
+        <view class="extend-options">
+          <view
+            wx:for="{{[30, 60, 90]}}"
+            wx:key="*this"
+            class="extend-option"
+            data-minutes="{{item}}"
+            bind:tap="onExtendConfirm"
+          >
+            <text class="extend-option__num">{{item}}</text>
+            <text class="extend-option__unit">分钟</text>
+          </view>
+        </view>
+        <view class="confirm-actions">
+          <view class="confirm-btn confirm-btn--ghost" bind:tap="onCloseExtend">取消</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 评价：已完成预约可选星 + 一句评价 -->
+  <view wx:if="{{sheet === 'review'}}" class="sheet-mask" bind:tap="onCloseReview">
+    <view class="sheet-panel" catch:tap="noop">
+      <view class="reschedule-sheet">
+        <view class="reschedule-title">评价 · {{reviewSeat}}</view>
+        <view class="review-note">这次自习体验如何？你的评价会帮助 AI 更好地推荐座位。</view>
+        <view class="review-stars">
+          <text
+            wx:for="{{[1,2,3,4,5]}}"
+            wx:key="*this"
+            class="review-star {{reviewStars >= item ? 'review-star--on' : ''}}"
+            data-star="{{item}}"
+            bind:tap="onReviewStars"
+          >★</text>
+        </view>
+        <view class="review-input-wrap">
+          <textarea
+            class="review-input"
+            value="{{reviewContent}}"
+            maxlength="200"
+            placeholder="写一句体验（选填）"
+            placeholder-class="review-placeholder"
+            bind:input="onReviewContent"
+          />
+        </view>
+        <view class="confirm-actions">
+          <view class="confirm-btn confirm-btn--ghost" bind:tap="onCloseReview">取消</view>
+          <view class="confirm-btn confirm-btn--primary" bind:tap="onSubmitReview">{{reviewSubmitting ? '提交中…' : '提交评价'}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 改约 -->
+  <view wx:if="{{sheet === 'reschedule'}}" class="sheet-mask" bind:tap="onCloseReschedule">
+    <view class="sheet-panel" catch:tap="noop">
+      <view class="reschedule-sheet">
+        <view class="reschedule-title">改约 · {{rescheduleSeat}}</view>
+        <view class="reschedule-field">
+          <text class="reschedule-label">日期</text>
+          <picker mode="date" value="{{rescheduleStart}}" start="{{rescheduleStartMin}}" end="{{rescheduleStartMax}}" bindchange="onRescheduleStartChange">
+            <view class="reschedule-value">{{rescheduleStart}}</view>
+          </picker>
+        </view>
+        <view class="reschedule-field">
+          <text class="reschedule-label">开始时间</text>
+          <picker mode="time" value="{{rescheduleStartTime}}" bindchange="onRescheduleStartTimeChange">
+            <view class="reschedule-value">{{rescheduleStartTime}}（默认 +2 小时）</view>
+          </picker>
+        </view>
+        <view class="confirm-actions">
+          <view class="confirm-btn confirm-btn--ghost" bind:tap="onCloseReschedule">取消</view>
+          <view class="confirm-btn confirm-btn--primary" bind:tap="onConfirmReschedule">{{submitting ? '提交中…' : '确认改约'}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

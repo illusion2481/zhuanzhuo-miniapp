@@ -1,0 +1,552 @@
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+// 与首页一致的浅青底色
+.page {
+  background: #F0FAFA;
+  padding: $spacing-lg;
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
+}
+
+// 标题改为黑色
+.page-title {
+  color: #2C3E50;
+}
+
+/* ═══ 登录失败横幅（非阻断） ═══ */
+.login-banner {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
+  padding: $spacing-sm $spacing-md;
+  background: #FFF7E6;
+  border: 2rpx solid #FFD591;
+  border-radius: $radius-md;
+}
+
+.login-banner__icon {
+  flex-shrink: 0;
+  width: 36rpx;
+  height: 36rpx;
+  line-height: 36rpx;
+  text-align: center;
+  font-weight: 700;
+  color: #FFFFFF;
+  background: #FA8C16;
+  border-radius: 50%;
+  font-size: 24rpx;
+}
+
+.login-banner__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.login-banner__title {
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: #AD6800;
+}
+
+.login-banner__desc {
+  font-size: $font-size-xs;
+  color: #874D00;
+  line-height: 1.5;
+  word-break: break-all;
+}
+
+.login-banner__btn {
+  flex-shrink: 0;
+  font-size: $font-size-xs;
+  color: #FFFFFF;
+  background: #FA8C16;
+  border-radius: $radius-sm;
+  padding: 0 $spacing-lg;
+}
+
+/* ═══ 顶部青绿渐变头像卡（同首页 header 语言） ═══ */
+.profile-card {
+  @include flex-between;
+  gap: $spacing-md;
+  padding: 40rpx $spacing-lg;
+  margin-bottom: $spacing-lg;
+  border-radius: $radius-lg;
+  background: linear-gradient(135deg, #1DB5B5 0%, #2BC4C4 100%);
+  box-shadow: 0 12rpx 30rpx rgba(29, 181, 181, 0.28);
+
+  &:active {
+    opacity: 0.97;
+  }
+}
+
+.profile-main {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  min-width: 0;
+}
+
+.avatar {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  font-weight: 700;
+  // 在渐变头部上用白底青字，干净好认
+  background: #ffffff;
+  color: $color-primary;
+  flex-shrink: 0;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.12);
+
+  // 覆盖 tone 渐变，统一白底
+  &--tone-0,
+  &--tone-1,
+  &--tone-2,
+  &--tone-3,
+  &--tone-4,
+  &--guest {
+    background: #ffffff;
+    color: $color-primary;
+  }
+}
+
+/* ═══ 可点击头像（button open-type="chooseAvatar"） ═══ */
+.avatar-btn {
+  position: relative;
+  width: 100rpx;
+  height: 100rpx;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  line-height: 1;
+  flex-shrink: 0;
+  border-radius: 50%;
+
+  /* 清掉小程序 button 自带边框与内边距 */
+  &::after {
+    border: none;
+  }
+
+  &--active {
+    opacity: 0.88;
+  }
+}
+
+.avatar-img {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  display: block;
+  background: #ffffff;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.12);
+}
+
+/* 右下角「换」角标 */
+.avatar-edit {
+  position: absolute;
+  right: -4rpx;
+  bottom: -4rpx;
+  min-width: 36rpx;
+  height: 36rpx;
+  padding: 0 6rpx;
+  border-radius: 18rpx;
+  background: $color-accent;
+  color: #ffffff;
+  font-size: 20rpx;
+  line-height: 36rpx;
+  text-align: center;
+  border: 3rpx solid #1DB5B5;
+  box-sizing: border-box;
+}
+
+.profile-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  min-width: 0;
+}
+
+/* 昵称输入框：视觉上等同于文本，但可编辑（type="nickname" 带出微信昵称快填） */
+.nickname-input {
+  width: 100%;
+  height: 48rpx;
+  padding: 0;
+  margin: 0;
+  font-size: $font-size-lg;
+  font-weight: 700;
+  color: #ffffff;
+  background: transparent;
+  border: none;
+  line-height: 48rpx;
+}
+
+.nickname-ph {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+  font-size: $font-size-md;
+}
+
+.profile-name {
+  font-size: $font-size-lg;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.profile-role {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.profile-btn {
+  flex-shrink: 0;
+  width: auto;
+  display: inline-block;
+  padding-left: 32rpx;
+  padding-right: 32rpx;
+}
+
+/* ═══ 封禁横幅 ═══ */
+.ban-banner {
+  background: rgba(229, 77, 66, 0.08);
+  border: 2rpx solid rgba(229, 77, 66, 0.2);
+  border-radius: $radius-sm;
+  padding: $spacing-sm $spacing-md;
+  color: $color-danger;
+  font-size: $font-size-sm;
+  margin-bottom: $spacing-md;
+}
+
+/* ═══ 资料待完善提示（青绿色调，区别红色封禁） ═══ */
+.setup-banner {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  background: rgba(29, 181, 181, 0.08);
+  border: 2rpx solid rgba(29, 181, 181, 0.25);
+  border-radius: $radius-sm;
+  padding: $spacing-sm $spacing-md;
+  margin-bottom: $spacing-md;
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.setup-banner__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  min-width: 0;
+}
+
+.setup-banner__title {
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: #0E7E7E;
+}
+
+.setup-banner__desc {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: 1.4;
+}
+
+.setup-banner__btn {
+  flex-shrink: 0;
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: 600;
+}
+
+/* ═══ 连续签到卡片 ═══ */
+.streak-card {
+  @include surface-block;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-md $spacing-lg;
+  margin-bottom: $spacing-md;
+  background: linear-gradient(135deg, rgba(29, 181, 181, 0.08), rgba(255, 165, 0, 0.06));
+}
+
+.streak-main {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.streak-num {
+  font-size: 56rpx;
+  font-weight: 700;
+  line-height: 1;
+  color: $color-primary;
+}
+
+.streak-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.streak-title {
+  font-size: $font-size-md;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.streak-sub {
+  font-size: $font-size-2xs;
+  color: $color-text-secondary;
+}
+
+.streak-badge {
+  font-size: 44rpx;
+}
+
+/* ═══ 邀请积分卡片（白底 + 数据头/操作区分层） ═══ */
+.invite-card {
+  @include surface-block;         // 白底 + 圆角 + 柔和阴影
+  padding: $spacing-md $spacing-lg;
+  margin-bottom: $spacing-md;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.invite-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+}
+
+.invite-main {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  min-width: 0;
+}
+
+.invite-num {
+  font-size: 56rpx;
+  font-weight: 700;
+  line-height: 1;
+  color: $color-primary;
+}
+
+.invite-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  min-width: 0;
+}
+
+.invite-title {
+  font-size: $font-size-md;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.invite-sub {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+/* 右上角「已抵免」小徽章 */
+.invite-badge {
+  flex-shrink: 0;
+  font-size: $font-size-xs;
+  color: $color-primary;
+  background: rgba(29, 181, 181, 0.1);
+  border-radius: $radius-sm;
+  padding: 6rpx 16rpx;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+/* 操作区：与数据区之间用细线分隔，白底承载 */
+.invite-ops {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-xs;
+  padding-top: $spacing-md;
+  border-top: 2rpx solid $color-border;
+}
+
+.invite-btn {
+  flex: 1;
+  padding: 0 $spacing-md;
+  border-radius: $radius-sm;
+  font-size: $font-size-sm;
+  line-height: 2.4;
+  text-align: center;
+
+  &--waive {
+    color: #ffffff;
+    background: $color-primary;
+
+    &[disabled] {
+      opacity: 0.5;
+    }
+  }
+
+  &--share {
+    color: $color-accent;
+    background: rgba(22, 119, 255, 0.1);
+    border: 2rpx solid rgba(22, 119, 255, 0.3);
+  }
+}
+
+.invite-tip {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: 1.4;
+}
+
+/* ═══ 信誉卡片 ═══ */
+.credit-card {
+  @include surface-block;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-md $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+.credit-label {
+  font-size: $font-size-md;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.credit-value {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+/* ═══ 统计卡片 ═══ */
+.stats-card {
+  @include surface-block;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+.stats-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.stats-title {
+  font-size: $font-size-lg;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.stats-loading {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-md;
+}
+
+.stat-item {
+  background: #F0FAFA;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.stat-value {
+  font-size: 52rpx;
+  font-weight: 700;
+  color: $color-primary;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+/* ═══ 链接行 ═══ */
+.link-row {
+  @include surface-block;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  font-size: $font-size-md;
+  color: $color-text;
+
+  &:active {
+    transform: scale(0.99);
+    opacity: 0.92;
+  }
+}
+
+/* 带副标题的链接行（预约通知设置） */
+.link-row--stack {
+  align-items: center;
+}
+
+.link-row__main {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  min-width: 0;
+}
+
+/* 入口标题，比普通行更醒目的主色 */
+.link-row__title {
+  font-size: $font-size-md;
+  font-weight: 600;
+  color: $color-primary;
+}
+
+.link-row__sub {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: 1.4;
+}
+
+.arrow {
+  font-size: $font-size-lg;
+  color: $color-primary;
+}
+
+/* 客服 / 邀请好友入口：button 继承 link-row 视觉，需重置原生按钮默认样式 */
+.link-row--contact,
+.link-row--invite {
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+  border-radius: $radius-md;
+  background: $color-surface;
+  border: 0;
+  line-height: 1.4;
+  font-size: $font-size-md;
+  margin-top: $spacing-sm;
+
+  &::after {
+    border: none;
+  }
+}
+

@@ -1,0 +1,821 @@
+<view class="page">
+  <!-- 数据初始化（开发期可见，不受管理员权限限制，用于 categories 为空时的自助修复） -->
+  <block wx:if="{{showDevTools}}">
+    <view class="tool-card">
+      <view class="tool-info">
+        <text class="tool-title">数据初始化</text>
+        <text class="tool-desc">写入云端自习室与座位。</text>
+      </view>
+      <button
+        class="tool-btn"
+        size="mini"
+        bindtap="onSeedData"
+        disabled="{{seeding}}"
+      >{{seeding ? '写入中…' : '初始化'}}</button>
+    </view>
+    <view wx:if="{{seedText}}" class="tool-result">{{seedText}}</view>
+  </block>
+
+  <!-- 未授权态 -->
+  <view wx:if="{{!authorized}}" class="unauthorized">
+    <view class="unauthorized-icon">
+      <view class="lock-shape">
+        <view class="lock-shackle"></view>
+        <view class="lock-body"></view>
+      </view>
+    </view>
+    <view class="unauthorized-title">无管理员权限</view>
+    <view class="unauthorized-desc">{{unauthorizedHint}}</view>
+    <button class="unauthorized-btn" size="default" bindtap="goBack">返回首页</button>
+  </view>
+
+  <!-- 已授权态 -->
+  <block wx:else>
+    <view class="page-title">管理后台</view>
+
+    <view class="admin-tabs">
+      <view
+        wx:for="{{tabs}}"
+        wx:key="key"
+        class="admin-tab {{activeTab === item.key ? 'admin-tab--on' : ''}}"
+        data-key="{{item.key}}"
+        bindtap="onTabSwitch"
+      >{{item.label}}<text
+          wx:if="{{item.key === 'feedback' && feedbackPending > 0}}"
+          class="admin-tab__badge {{feedbackOverdue > 0 ? 'admin-tab__badge--warn' : ''}}"
+        >{{feedbackPending}}</text></view>
+    </view>
+
+    <loading-state wx:if="{{loading}}" tip="统计中…" />
+
+    <block wx:elif="{{hasData && activeTab === 'dashboard'}}">
+      <!-- ① 核心 KPI 四宫格 -->
+      <view class="kpi-grid">
+        <view class="kpi-card kpi-card--primary">
+          <view class="kpi-val">{{stats.total}}</view>
+          <view class="kpi-label">总预约</view>
+        </view>
+        <view class="kpi-card kpi-card--success">
+          <view class="kpi-val">{{stats.checkedIn}}</view>
+          <view class="kpi-label">已签到</view>
+        </view>
+        <view class="kpi-card kpi-card--danger">
+          <view class="kpi-val">{{stats.rates.noShowRate}}<text class="kpi-unit">%</text></view>
+          <view class="kpi-label">违约率</view>
+        </view>
+        <view class="kpi-card kpi-card--accent">
+          <view class="kpi-val">{{stats.rates.occupancyRate}}<text class="kpi-unit">%</text></view>
+          <view class="kpi-label">当前占用</view>
+        </view>
+      </view>
+
+      <!-- ② 状态分布：环形图 + 图例网格 -->
+      <view class="viz-card">
+        <view class="viz-head">
+          <text class="viz-title">状态分布</text>
+          <text class="viz-sub">共 {{stats.total}} 条</text>
+        </view>
+        <view class="donut-wrap">
+          <view class="donut {{statusDonutStyle ? '' : 'donut--empty'}}" style="{{statusDonutStyle}}">
+            <view class="donut-hole">
+              <text class="donut-num">{{stats.total}}</text>
+              <text class="donut-cap">总预约</text>
+            </view>
+          </view>
+          <view class="donut-legend">
+            <view class="lg-item" wx:for="{{statusRows}}" wx:key="key">
+              <view class="lg-dot status-{{item.key}}"></view>
+              <text class="lg-name">{{item.label}}</text>
+              <text class="lg-val">{{item.count}}</text>
+              <text class="lg-pct">{{item.percent}}%</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- ③ 近 7 日预约趋势：柱状图 -->
+      <view class="viz-card">
+        <view class="viz-head">
+          <text class="viz-title">近 7 日预约趋势</text>
+          <text class="viz-sub">按创建日</text>
+        </view>
+        <view wx:if="{{trendBars.length}}" class="bar-chart">
+          <view class="bar-col" wx:for="{{trendBars}}" wx:key="date">
+            <text class="bar-val">{{item.count}}</text>
+            <view class="bar-track">
+              <view class="bar-fill" style="height: {{item.heightPercent}}%"></view>
+            </view>
+            <text class="bar-label">{{item.label}}</text>
+          </view>
+        </view>
+        <view wx:else class="viz-empty">近 7 日暂无预约</view>
+      </view>
+
+      <!-- ④ 高峰开始时段：排行横条 -->
+      <view wx:if="{{peakBars.length}}" class="viz-card">
+        <view class="viz-head">
+          <text class="viz-title">高峰开始时段</text>
+          <text class="viz-sub">近 7 日 · Top {{peakBars.length}}</text>
+        </view>
+        <view class="rank-row" wx:for="{{peakBars}}" wx:key="hour">
+          <text class="rank-no {{item.isTop ? 'rank-no--top' : ''}}">{{item.rank}}</text>
+          <text class="rank-time">{{item.label}}</text>
+          <view class="rank-track">
+            <view class="rank-fill" style="width: {{item.widthPercent}}%"></view>
+          </view>
+          <text class="rank-count">{{item.count}} 次</text>
+        </view>
+      </view>
+
+      <!-- ⑥ 关键指标：进度条 -->
+      <view class="viz-card">
+        <view class="viz-head">
+          <text class="viz-title">关键指标</text>
+        </view>
+        <view class="metric-row" wx:for="{{rateMetrics}}" wx:key="key">
+          <text class="metric-name">{{item.label}}</text>
+          <view class="metric-track">
+            <view class="metric-fill metric-fill--{{item.tone}}" style="width: {{item.value}}%"></view>
+          </view>
+          <text class="metric-val">{{item.value}}%</text>
+        </view>
+        <view class="metric-chips">
+          <view class="m-chip">
+            <text class="m-chip__n">{{stats.totalSeats}}</text>
+            <text class="m-chip__l">座位总数</text>
+          </view>
+          <view class="m-chip">
+            <text class="m-chip__n">{{stats.occupiedNow}}</text>
+            <text class="m-chip__l">当前在座</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- ⑤ 实时占用 -->
+      <view wx:if="{{overview}}" class="viz-card">
+        <view class="viz-head">
+          <text class="viz-title">实时占用</text>
+          <text class="viz-sub">{{overview.realtime.active_rooms}} 个自习室</text>
+        </view>
+
+        <view class="usage-hero">
+          <view class="usage-hero__n">{{overview.realtime.usage_rate}}<text class="usage-hero__u">%</text></view>
+          <view class="usage-hero__txt">整体占用率</view>
+          <view class="usage-hero__bar">
+            <view class="usage-hero__fill" style="width: {{overview.realtime.usage_rate}}%"></view>
+          </view>
+        </view>
+
+        <view class="usage-chips">
+          <view class="u-chip">
+            <view class="u-dot u-dot--used"></view>
+            <text class="u-chip__l">在座</text>
+            <text class="u-chip__v">{{overview.realtime.used_seats}}</text>
+          </view>
+          <view class="u-chip">
+            <view class="u-dot u-dot--free"></view>
+            <text class="u-chip__l">可用</text>
+            <text class="u-chip__v">{{overview.realtime.available_seats}}</text>
+          </view>
+          <view class="u-chip">
+            <view class="u-dot u-dot--maintain"></view>
+            <text class="u-chip__l">维护</text>
+            <text class="u-chip__v">{{overview.realtime.maintain_seats}}</text>
+          </view>
+        </view>
+
+        <view class="room-list">
+          <view wx:for="{{overview.rooms}}" wx:key="room_id" class="room-row">
+            <view class="room-head">
+              <text class="room-name">{{item.name}}</text>
+              <text class="room-num">{{item.used}}/{{item.total}} · {{item.usage_rate}}%</text>
+            </view>
+            <view class="room-bar">
+              <view class="room-bar__fill" style="width: {{item.usage_rate}}%"></view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{showDevTools && diagText}}" class="diag-card">
+        <text class="diag-title">数据诊断</text>
+        <text class="diag-text">{{diagText}}</text>
+      </view>
+
+      <button
+        class="refresh-btn"
+        size="mini"
+        bindtap="refresh"
+        disabled="{{loading}}"
+      >{{loading ? '刷新中…' : '刷新'}}</button>
+    </block>
+
+    <block wx:elif="{{!loading && activeTab === 'dashboard'}}">
+      <!-- 失败时明确告知原因（否则会与「暂无数据」混淆） -->
+      <view wx:if="{{errorText}}" class="diag-card diag-card--error">
+        <text class="diag-title">统计加载失败</text>
+        <text class="diag-text">{{errorText}}</text>
+      </view>
+      <empty-state
+        wx:else
+        title="暂无统计数据"
+        description="还没有预约记录，产生预约后这里会显示统计"
+        icon="📊"
+      />
+      <!-- 诊断行：区分「集合为空」与「写库字段口径不符」 -->
+      <view wx:if="{{diagText}}" class="diag-card">
+        <text class="diag-title">数据诊断</text>
+        <text class="diag-text">{{diagText}}</text>
+      </view>
+    </block>
+
+    <!-- ═══ 预约订单 ═══ -->
+    <!-- ═══ 签到 tab：大屏头部（实时时钟 + 选中房间签到码）+ 签到方式配置 ═══ -->
+    <block wx:if="{{activeTab === 'checkin'}}">
+      <!-- 数据大屏：签到码跟随上方 picker 选中的房间切换 -->
+      <view class="dash-hero">
+        <view class="dash-hero__clock">
+          <text class="dash-hero__date">{{clockDate}}</text>
+          <text class="dash-hero__time">{{clockTime}}</text>
+        </view>
+        <view class="dash-hero__divider"></view>
+        <view class="dash-hero__code">
+          <text class="dash-hero__code-label">{{checkinRooms[checkinRoomIndex].name || '未配置房间'}}</text>
+          <text class="dash-hero__code-num">{{checkinRooms[checkinRoomIndex].code || '— — — —'}}</text>
+          <view class="dash-hero__code-mode {{checkinRooms[checkinRoomIndex].code_custom ? 'dash-hero__code-mode--fixed' : ''}}">
+            {{checkinRooms[checkinRoomIndex].code_custom ? '固定码' : '每日自动'}}
+          </view>
+        </view>
+      </view>
+
+      <!-- ═══ 签到配置（拆分为多张独立卡片，每卡一件事）═══
+           共用 checkinRooms 一份列表、checkinRoomIndex 一个房间选择器，
+           大屏签到码随该选择器联动。 -->
+
+      <!-- 卡 1：选择房间 -->
+      <view class="ops-card">
+        <view class="card-title">选择房间</view>
+        <view wx:if="{{checkinRooms.length === 0}}" class="seat-msg">暂无可设置的房间，请先新增自习室</view>
+        <block wx:if="{{checkinRooms.length > 0}}">
+          <view class="ci-room-btns">
+            <view
+              wx:for="{{checkinRooms}}"
+              wx:key="id"
+              class="ci-room-btn {{index === checkinRoomIndex ? 'ci-room-btn--active' : ''}}"
+              data-index="{{index}}"
+              bindtap="onCheckinRoomTap"
+            >{{item.name}}</view>
+          </view>
+          <view class="ci-picker-hint">下方两项配置均作用于当前选中的房间</view>
+        </block>
+      </view>
+
+      <!-- 卡 2：位置签到（状态 pill + 可视化选点卡） -->
+      <view wx:if="{{checkinRooms.length > 0}}" class="ops-card">
+        <view class="ci-sec-head">
+          <view class="ci-sec-bar"></view>
+          <text class="ci-sec-title ci-sec-title--lg">位置签到</text>
+          <view class="ci-sec-pill {{checkinRooms[checkinRoomIndex].geo_enabled ? 'ci-sec-pill--on' : ''}}">
+            <view class="ci-sec-pill__dot"></view>
+            <text>{{checkinRooms[checkinRoomIndex].geo_enabled ? '已开启' : '未开启'}}</text>
+          </view>
+        </view>
+
+        <view wx:if="{{geoError}}" class="seat-msg seat-msg--error">{{geoError}}</view>
+
+        <view class="geo-card {{geoLat ? 'geo-card--on' : ''}}" bindtap="onPickGeoLocation">
+          <view class="geo-card__pin"></view>
+          <view class="geo-card__body">
+            <text class="geo-card__addr">{{geoLat ? geoAddress : '未设置签到位置'}}</text>
+            <text class="geo-card__meta">{{geoLat ? geoLat + ' , ' + geoLng : '点此卡片打开地图选点'}}</text>
+          </view>
+          <text wx:if="{{geoLat}}" class="geo-card__radius">{{geoRadiusInput}}m</text>
+          <text class="geo-card__chevron">›</text>
+        </view>
+
+        <input
+          class="ops-input ci-input"
+          type="number"
+          value="{{geoRadiusInput}}"
+          placeholder="签到半径（米）"
+          bindinput="onGeoRadiusInput"
+        />
+        <view class="resv-actions">
+          <button class="mini-btn mini-btn--primary" size="mini" bindtap="onSaveRoomGeo" disabled="{{geoSaving}}">
+            {{geoSaving ? '保存中…' : '保存并开启'}}
+          </button>
+          <button class="mini-btn" size="mini" bindtap="onClearRoomGeo" disabled="{{geoSaving}}">关闭</button>
+        </view>
+        <view wx:if="{{geoMsg}}" class="seat-msg">{{geoMsg}}</view>
+      </view>
+
+      <!-- 卡 3：到店签到码（状态 pill + 大号号码卡） -->
+      <view wx:if="{{checkinRooms.length > 0}}" class="ops-card">
+        <view class="ci-sec-head">
+          <view class="ci-sec-bar"></view>
+          <text class="ci-sec-title ci-sec-title--lg">到店签到码</text>
+          <view class="ci-sec-pill {{checkinRooms[checkinRoomIndex].code_custom ? 'ci-sec-pill--warn' : 'ci-sec-pill--on'}}">
+            <view class="ci-sec-pill__dot"></view>
+            <text>{{checkinRooms[checkinRoomIndex].code_custom ? '固定码' : '每日自动'}}</text>
+          </view>
+        </view>
+
+        <view wx:if="{{checkinError}}" class="seat-msg seat-msg--error">{{checkinError}}</view>
+
+        <view class="ci-code-card">
+          <view class="ci-code-card__main">
+            <text class="ci-code-card__label">当前生效</text>
+            <text class="ci-code-card__num">{{checkinRooms[checkinRoomIndex].code}}</text>
+          </view>
+          <text class="ci-code-card__tag {{checkinRooms[checkinRoomIndex].code_custom ? 'ci-code-card__tag--fixed' : ''}}">{{checkinRooms[checkinRoomIndex].code_custom ? '固定码' : '今日动态码'}}</text>
+        </view>
+
+        <view class="ci-inline-row">
+          <input
+            class="ops-input"
+            value="{{checkinCodeInput}}"
+            placeholder="自定义 4-8 位数字/字母"
+            bindinput="onCheckinCodeInput"
+          />
+          <button class="mini-btn mini-btn--primary" size="mini" bindtap="onSaveCheckinCode" disabled="{{checkinSaving}}">
+            {{checkinSaving ? '保存中…' : '设为固定码'}}
+          </button>
+        </view>
+        <view class="resv-actions">
+          <button class="mini-btn" size="mini" bindtap="onClearCheckinCode" disabled="{{checkinSaving}}">恢复每日自动</button>
+        </view>
+        <view wx:if="{{checkinMsg}}" class="seat-msg">{{checkinMsg}}</view>
+      </view>
+
+      <!-- 各门店当前配置：独立卡片，一览所有房间的围栏与当日码 -->
+      <view wx:if="{{checkinRooms.length > 0}}" class="ops-card">
+        <view class="card-title">各门店当前配置</view>
+        <view wx:for="{{checkinRooms}}" wx:key="room_id" class="ci-row">
+          <view class="ci-row-dot {{item.geo_enabled ? 'ci-row-dot--on' : ''}}"></view>
+          <view class="ci-row-main">
+            <text class="ci-room">{{item.name}}</text>
+            <text class="ci-row-meta">{{item.geo_enabled ? '半径 ' + item.geo_radius + ' 米' : '未设围栏'}} · {{item.code_custom ? '固定码' : '今日码'}} {{item.code}}</text>
+          </view>
+          <view class="ci-tag {{item.geo_enabled ? 'ci-tag--fixed' : ''}}">{{item.geo_enabled ? '位置已开' : '不限位置'}}</view>
+        </view>
+      </view>
+    </block>
+
+    <block wx:if="{{activeTab === 'reservations'}}">
+      <view class="ops-card">
+        <view class="card-title">预约订单</view>
+        <view class="filter-row filter-row--grid">
+          <view
+            wx:for="{{resvStatusTabs}}"
+            wx:key="key"
+            class="filter-chip {{resvStatus === item.key ? 'filter-chip--on' : ''}}"
+            data-key="{{item.key}}"
+            bindtap="onResvStatusSwitch"
+          >{{item.label}}</view>
+        </view>
+        <view class="filter-row filter-row--grid">
+          <view
+            class="filter-chip {{resvDate === 'today' ? 'filter-chip--on' : ''}}"
+            data-key="today"
+            bindtap="onResvDateSwitch"
+          >今日</view>
+          <view
+            class="filter-chip {{resvDate === 'all' ? 'filter-chip--on' : ''}}"
+            data-key="all"
+            bindtap="onResvDateSwitch"
+          >全部</view>
+          <picker
+            mode="date"
+            value="{{resvCustomDate}}"
+            bindchange="onResvCustomDateChange"
+          >
+            <view class="filter-chip {{resvDate === 'custom' ? 'filter-chip--on' : ''}}">{{resvCustomDate || '选择日期'}}</view>
+          </picker>
+          <button class="mini-btn" size="mini" bindtap="loadReservations" disabled="{{resvLoading}}">
+            {{resvLoading ? '加载中…' : '刷新'}}
+          </button>
+        </view>
+
+        <view wx:if="{{resvError}}" class="seat-msg seat-msg--error">{{resvError}}</view>
+
+        <!-- 预约卡片（与「用户与信用」同款样式）。
+             操作分两层：上排是常规操作，下排是**破坏性**操作（标记违约 / 取消并释放），
+             两者视觉分离 + 点击后二次确认，避免手滑把正常订单记成违约。 -->
+        <block wx:if="{{resvList.length}}">
+          <view wx:for="{{resvList}}" wx:key="_id" class="resv-card">
+            <view class="resv-card__head">
+              <view class="resv-card__avatar">{{item.seat_label[0]}}</view>
+              <view class="resv-card__meta">
+                <text class="resv-card__name">{{item.seat_label}}</text>
+                <text class="resv-card__sub">{{item.room_name}} · {{item.user_name}}</text>
+              </view>
+              <text class="resv-status resv-status--{{item.status}}">{{item.status_label}}</text>
+            </view>
+
+            <view class="resv-card__info">
+              <text class="resv-card__sub">{{item.time_label}}</text>
+              <text wx:if="{{item.goal}}" class="resv-card__sub">目标：{{item.goal}}</text>
+            </view>
+
+            <view wx:if="{{item.can_operate}}" class="resv-card__ops">
+              <view class="resv-card__actions">
+                <button
+                  wx:if="{{item.status === 'pending_checkin'}}"
+                  class="mini-btn"
+                  size="mini"
+                  data-id="{{item._id}}"
+                  data-op="checkin"
+                  bindtap="onResvOp"
+                >标记到店</button>
+                <button
+                  class="mini-btn"
+                  size="mini"
+                  data-id="{{item._id}}"
+                  data-op="complete"
+                  bindtap="onResvOp"
+                >结束</button>
+              </view>
+              <view class="resv-card__actions resv-card__actions--danger">
+                <button
+                  class="mini-btn mini-btn--warn"
+                  size="mini"
+                  data-id="{{item._id}}"
+                  data-op="no_show"
+                  bindtap="onResvOp"
+                >标记违约</button>
+                <button
+                  class="mini-btn mini-btn--danger"
+                  size="mini"
+                  data-id="{{item._id}}"
+                  data-op="cancel"
+                  bindtap="onResvOp"
+                >取消并释放</button>
+              </view>
+            </view>
+          </view>
+        </block>
+        <empty-state
+          wx:else
+          title="暂无预约"
+          description="换个筛选条件试试"
+          icon="📋"
+        />
+      </view>
+    </block>
+
+    <!-- ═══ 用户与信用 ═══ -->
+    <block wx:if="{{activeTab === 'users'}}">
+      <view class="ops-card">
+        <view class="card-title">用户与信用</view>
+        <view class="filter-row">
+          <input
+            class="ops-input"
+            placeholder="按昵称搜索（留空查全部）"
+            value="{{userKeyword}}"
+            bindinput="onUserKeyword"
+            bindconfirm="loadUsers"
+          />
+          <button class="mini-btn" size="mini" bindtap="loadUsers" disabled="{{userLoading}}">
+            {{userLoading ? '加载中…' : '搜索'}}
+          </button>
+        </view>
+        <view wx:if="{{userError}}" class="seat-msg seat-msg--error">{{userError}}</view>
+        <block wx:if="{{userList.length}}">
+          <view wx:for="{{userList}}" wx:key="user_id" class="user-card">
+            <view class="user-card__head">
+              <view class="user-card__avatar">{{item.nick_name[0] || '座'}}</view>
+              <view class="user-card__meta">
+                <text class="user-card__name">{{item.nick_name}}</text>
+                <text class="user-card__sub">违规 {{item.no_show_count}} 次 · {{item.ban_label}}</text>
+                <text class="user-card__sub">积分 {{item.invite_credit}}<block wx:if="{{item.phone_label}}"> · 手机 {{item.phone_label}}</block></text>
+              </view>
+              <view class="user-badge {{item.banned ? 'user-badge--banned' : 'user-badge--ok'}}">
+                {{item.banned ? '已禁约' : '正常'}}
+              </view>
+            </view>
+            <view class="user-card__actions">
+              <button
+                class="mini-btn user-card__btn"
+                size="mini"
+                data-id="{{item.user_id}}"
+                data-op="clear_penalty"
+                bindtap="onUserOp"
+              >解除并清零</button>
+              <button
+                class="mini-btn user-card__btn"
+                size="mini"
+                data-id="{{item.user_id}}"
+                data-op="unban"
+                bindtap="onUserOp"
+              >仅解除禁约</button>
+              <button
+                class="mini-btn mini-btn--danger user-card__btn"
+                size="mini"
+                data-id="{{item.user_id}}"
+                data-op="ban"
+                bindtap="onUserOp"
+              >封禁24h</button>
+            </view>
+          </view>
+        </block>
+        <empty-state wx:else title="没有匹配的用户" description="换个关键词试试" icon="👤" />
+      </view>
+    </block>
+
+    <!-- ═══ 意见反馈 ═══ -->
+    <block wx:if="{{activeTab === 'feedback'}}">
+      <view class="ops-card">
+        <view class="card-title">意见反馈</view>
+        <view class="filter-row">
+          <view class="seg">
+            <view
+              class="seg__item {{feedbackFilter === 'all' ? 'seg__item--on' : ''}}"
+              data-f="all"
+              bindtap="onFeedbackFilter"
+            >全部</view>
+            <view
+              class="seg__item {{feedbackFilter === 'pending' ? 'seg__item--on' : ''}}"
+              data-f="pending"
+              bindtap="onFeedbackFilter"
+            >待处理</view>
+            <view
+              class="seg__item {{feedbackFilter === 'replied' ? 'seg__item--on' : ''}}"
+              data-f="replied"
+              bindtap="onFeedbackFilter"
+            >已回复</view>
+            <view
+              class="seg__item {{feedbackFilter === 'handled' ? 'seg__item--on' : ''}}"
+              data-f="handled"
+              bindtap="onFeedbackFilter"
+            >已关闭</view>
+          </view>
+        </view>
+        <view wx:if="{{feedbackError}}" class="seat-msg seat-msg--error">{{feedbackError}}</view>
+        <block wx:if="{{feedbackList.length}}">
+          <view wx:for="{{feedbackList}}" wx:key="feedback_id" class="fb-card">
+            <view class="fb-card__head">
+              <view class="fb-tag fb-tag--{{item.status}}">{{item.status_text}}</view>
+              <text class="fb-cat">{{item.category}}</text>
+              <text class="fb-time">{{item.created_label}}</text>
+            </view>
+            <!-- 谁提的 + 等了多久：管理员第一眼要能「认人」和判断紧急度 -->
+            <view class="fb-meta">
+              <text class="fb-meta__user">{{item.user_label}}</text>
+              <text
+                wx:if="{{item.wait_label}}"
+                class="fb-meta__wait {{item.overdue ? 'fb-meta__wait--overdue' : ''}}"
+              >已等待 {{item.wait_label}}{{item.overdue ? ' · 已超时' : ''}}</text>
+            </view>
+            <view class="fb-content">{{item.content}}</view>
+            <view wx:if="{{item.images.length}}" class="fb-imgs">
+              <image
+                wx:for="{{item.images}}"
+                wx:key="*this"
+                class="fb-img"
+                src="{{item}}"
+                mode="aspectFill"
+              />
+            </view>
+            <!-- 追问记录：用户看完回复又追问了，说明上一轮没解决，需重点跟进 -->
+            <view wx:if="{{item.followups.length}}" class="fb-followups">
+              <text class="fb-followups__tag">用户追问 {{item.followups.length}} 次</text>
+              <view wx:for="{{item.followups}}" wx:for-item="fu" wx:key="created_at" class="fb-followups__item">
+                <text class="fb-followups__text">{{fu.content}}</text>
+                <text class="fb-followups__time">{{fu.time_label}}</text>
+              </view>
+            </view>
+            <!-- 已回复留痕：管理员能看到自己回过什么 -->
+            <view wx:if="{{item.reply}}" class="fb-reply">
+              <view class="fb-reply__head">
+                <text class="fb-reply__tag">已回复</text>
+                <text wx:if="{{item.replied_label}}" class="fb-reply__time">{{item.replied_label}}</text>
+              </view>
+              <text class="fb-reply__text">{{item.reply}}</text>
+            </view>
+
+            <view wx:if="{{item.status !== 'handled'}}" class="fb-actions">
+              <textarea
+                class="fb-reply-input"
+                placeholder="回复用户（用户在「我的反馈」里可见，最多 500 字）"
+                maxlength="500"
+                value="{{feedbackReplies[item.feedback_id]}}"
+                data-id="{{item.feedback_id}}"
+                bindinput="onFeedbackReplyInput"
+              />
+              <view class="fb-actions__row">
+                <button
+                  class="mini-btn mini-btn--primary"
+                  size="mini"
+                  data-id="{{item.feedback_id}}"
+                  bindtap="onReplyFeedback"
+                >发送回复</button>
+                <button
+                  class="mini-btn"
+                  size="mini"
+                  data-id="{{item.feedback_id}}"
+                  bindtap="onMarkFeedbackHandled"
+                >不回复，直接关闭</button>
+              </view>
+            </view>
+          </view>
+        </block>
+        <empty-state wx:else title="暂无反馈" description="用户提交的意见会显示在这里" icon="💬" />
+      </view>
+    </block>
+
+    <!-- ═══ 座位维护 ═══ -->
+    <view wx:if="{{activeTab === 'seats'}}" class="seat-card">
+      <view class="card-title">座位维护</view>
+
+      <view wx:if="{{seatRooms.length}}" class="seat-tabs">
+        <view
+          wx:for="{{seatRooms}}"
+          wx:key="room_id"
+          class="seat-tab {{index === activeRoomIndex ? 'seat-tab--on' : ''}}"
+          data-index="{{index}}"
+          bindtap="onRoomSwitch"
+        >{{item.name}}</view>
+      </view>
+
+      <view wx:if="{{seatSummary}}" class="seat-summary">{{seatSummary}}</view>
+
+      <view wx:if="{{seatCells.length}}" class="seat-grid">
+        <view
+          wx:for="{{seatCells}}"
+          wx:key="seat_id"
+          class="seat-chip seat-chip--{{item.status}}"
+          data-seat="{{item.seat_id}}"
+          data-status="{{item.status}}"
+          bindtap="onSeatTap"
+        >
+          <text class="seat-chip__label">{{item.label}}</text>
+          <view wx:if="{{item.features.length}}" class="seat-chip__tags">
+            <text wx:for="{{item.features}}" wx:key="*this" class="seat-tag seat-tag--{{item}}"></text>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{seatLoading}}" class="seat-msg">处理中…</view>
+      <view wx:elif="{{seatError}}" class="seat-msg seat-msg--error">{{seatError}}</view>
+      <view wx:elif="{{seatMsg}}" class="seat-msg">{{seatMsg}}</view>
+
+      <view wx:if="{{seatCells.length}}" class="seat-legend">
+        <view class="seat-legend__item">
+          <view class="seat-dot seat-dot--free"></view>
+          <text>空闲</text>
+        </view>
+        <view class="seat-legend__item">
+          <view class="seat-dot seat-dot--reserved"></view>
+          <text>占用中</text>
+        </view>
+        <view class="seat-legend__item">
+          <view class="seat-dot seat-dot--maintain"></view>
+          <text>维护</text>
+        </view>
+      </view>
+
+      <button
+        class="refresh-btn"
+        size="mini"
+        bindtap="loadSeats"
+        disabled="{{seatLoading}}"
+      >{{seatLoading ? '刷新中…' : '刷新座位'}}</button>
+    </view>
+
+    <!-- ═══ 房间与批量座位 ═══ -->
+    <block wx:if="{{activeTab === 'seats'}}">
+      <view class="ops-card">
+        <view class="card-title">房间设置</view>
+        <view class="form-row">
+          <text class="form-label">名称</text>
+          <input class="ops-input" value="{{roomForm.name}}" data-field="name" bindinput="onRoomFormInput" />
+        </view>
+        <view class="form-row">
+          <text class="form-label">楼栋</text>
+          <input class="ops-input" value="{{roomForm.building}}" data-field="building" bindinput="onRoomFormInput" />
+        </view>
+        <view class="form-row">
+          <text class="form-label">开放</text>
+          <input class="ops-input" value="{{roomForm.open_time}}" data-field="open_time" bindinput="onRoomFormInput" />
+        </view>
+        <view class="form-row">
+          <text class="form-label">关闭</text>
+          <input class="ops-input" value="{{roomForm.close_time}}" data-field="close_time" bindinput="onRoomFormInput" />
+        </view>
+        <view class="resv-actions">
+          <button class="mini-btn mini-btn--primary" size="mini" bindtap="onSaveRoom" disabled="{{roomSaving}}">
+            {{roomSaving ? '保存中…' : '保存房间信息'}}
+          </button>
+          <button class="mini-btn {{roomStatus === 'active' ? 'mini-btn--danger' : 'mini-btn--primary'}}" size="mini" bindtap="onToggleRoom">
+            {{roomStatus === 'active' ? '停用该自习室' : '启用该自习室'}}
+          </button>
+        </view>
+      </view>
+
+      <view class="ops-card">
+        <view class="card-title">批量座位</view>
+        <view class="form-row">
+          <text class="form-label">编号前缀</text>
+          <input class="ops-input" value="{{seatPrefix}}" data-field="prefix" bindinput="onSeatFormInput" />
+        </view>
+        <view class="form-row">
+          <text class="form-label">新增数量</text>
+          <input class="ops-input" type="number" value="{{seatAddCount}}" data-field="count" bindinput="onSeatFormInput" />
+        </view>
+        <view class="form-row">
+          <text class="form-label">座位属性</text>
+          <view class="feature-tags">
+            <view
+              wx:for="{{seatFeatures}}"
+              wx:key="key"
+              class="feature-tag {{item.selected ? 'feature-tag--on' : ''}}"
+              data-key="{{item.key}}"
+              bindtap="onSeatFeatureToggle"
+            >{{item.label}}</view>
+          </view>
+        </view>
+        <view class="resv-actions">
+          <button class="mini-btn mini-btn--primary" size="mini" bindtap="onAddSeats">新增座位</button>
+          <button class="mini-btn" size="mini" bindtap="onBatchSeats" data-status="maintain">空闲设维护</button>
+          <button class="mini-btn" size="mini" bindtap="onBatchSeats" data-status="free">维护全释放</button>
+        </view>
+
+        <view class="divider-line"></view>
+
+        <view class="form-row">
+          <text class="form-label">删除末尾</text>
+          <input class="ops-input" type="number" value="{{seatRemoveCount}}" data-field="removeCount" bindinput="onSeatFormInput" />
+        </view>
+        <view class="resv-actions">
+          <button class="mini-btn mini-btn--danger" size="mini" bindtap="onRemoveLastSeats">删除末尾座位</button>
+          <button class="mini-btn" size="mini" bindtap="onRenumberSeats">编号重排（补空缺）</button>
+        </view>
+        <view wx:if="{{roomError}}" class="seat-msg seat-msg--error">{{roomError}}</view>
+        <view wx:elif="{{roomMsg}}" class="seat-msg">{{roomMsg}}</view>
+      </view>
+    </block>
+  </block>
+
+  <!-- ═══ 座位操作面板（点座位格弹出：属性勾选 / 设维护 / 删除） ═══ -->
+  <view wx:if="{{seatPanelVisible}}" class="seat-panel-mask" bindtap="closeSeatPanel">
+    <view class="seat-panel" catchtap="noop">
+      <view class="seat-panel__head">
+        <text class="seat-panel__title">{{editingSeat.label}}</text>
+        <text class="seat-panel__sub">{{editingSeat.seat_id}} · {{editingSeat.status === 'maintain' ? '维护中' : editingSeat.status === 'free' ? '空闲' : '占用中'}}</text>
+        <text class="seat-panel__close" bindtap="closeSeatPanel">✕</text>
+      </view>
+
+      <!-- 状态切换 -->
+      <view class="seat-panel__section">
+        <text class="seat-panel__label">状态</text>
+        <view class="seat-panel__status-row">
+          <view
+            wx:if="{{editingSeat.status !== 'reserved'}}"
+            class="seat-panel__opt {{editingSeat.status === 'free' ? 'seat-panel__opt--active' : ''}}"
+            data-status="free"
+            bindtap="onSeatPanelSetStatus"
+          >恢复空闲</view>
+          <view
+            wx:if="{{editingSeat.status !== 'reserved'}}"
+            class="seat-panel__opt {{editingSeat.status === 'maintain' ? 'seat-panel__opt--active' : ''}}"
+            data-status="maintain"
+            bindtap="onSeatPanelSetStatus"
+          >设为维护</view>
+        </view>
+        <button
+          wx:if="{{editingSeat.status === 'reserved'}}"
+          class="seat-panel__btn seat-panel__btn--del"
+          bindtap="onSeatPanelRelease"
+          disabled="{{seatPanelSaving}}"
+        >强制释放座位</button>
+      </view>
+
+      <!-- 属性勾选 -->
+      <view class="seat-panel__section">
+        <text class="seat-panel__label">座位属性</text>
+        <view class="seat-panel__feat-row">
+          <view
+            wx:for="{{seatPanelFeatureItems}}"
+            wx:key="key"
+            class="seat-panel__feat {{item.checked ? 'seat-panel__feat--on' : ''}}"
+            data-key="{{item.key}}"
+            bindtap="onSeatFeatureCheck"
+          >
+            <text class="seat-panel__feat-mark">{{item.checked ? '✓' : ''}}</text>
+            <text>{{item.label}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="seat-panel__actions">
+        <button class="seat-panel__btn seat-panel__btn--save" bindtap="onSaveSeatPanel" disabled="{{seatPanelSaving}}">
+          {{seatPanelSaving ? '保存中…' : '保存属性'}}
+        </button>
+        <button class="seat-panel__btn seat-panel__btn--del" bindtap="onDeleteSeat" disabled="{{seatPanelSaving || editingSeat.status !== 'free'}}">
+          {{editingSeat.status === 'free' ? '删除座位' : '占用中不可删'}}
+        </button>
+      </view>
+      <text wx:if="{{seatMsg}}" class="seat-msg">{{seatMsg}}</text>
+    </view>
+  </view>
+</view>

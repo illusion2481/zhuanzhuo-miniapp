@@ -1,0 +1,745 @@
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+// 与首页一致的浅青底色
+.page {
+  background: #F0FAFA;
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
+}
+
+/* ═══ 页头 ═══ */
+.page-header {
+  margin-bottom: $spacing-lg;
+  padding: 0 $spacing-lg;
+}
+
+.page-subtitle {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-top: $spacing-xs;
+}
+
+/* ═══ 计时器卡片（准备开始 / 运行中） ═══ */
+.timer-block {
+  @include surface-block;
+  border-radius: $radius-lg;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: $spacing-md;
+  padding: $spacing-xl $spacing-lg;
+  margin: 0 $spacing-lg $spacing-lg;
+}
+
+.timer-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.timer-goal {
+  font-size: $font-size-md;
+  font-weight: 500;
+  color: $color-text;
+  text-align: center;
+}
+
+.timer-status {
+  font-size: $font-size-xs;
+  padding: 4rpx 16rpx;
+  border-radius: $radius-sm;
+  background: rgba(29, 181, 181, 0.12);
+  color: $color-accent;
+
+  &--paused {
+    background: rgba(224, 159, 62, 0.16);
+    color: $color-warning;
+  }
+}
+
+.timer-value {
+  font-size: $size-stat-hero;
+  font-weight: 700;
+  color: $color-primary;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 4rpx;
+  line-height: 1;
+
+  &--idle {
+    font-size: $font-size-xl;
+    color: $color-text-secondary;
+  }
+}
+
+.timer-sub {
+  display: flex;
+  justify-content: space-between;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.timer-actions {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+
+  &__danger {
+    margin-top: $spacing-xs;
+  }
+}
+
+.goal-input {
+  height: $control-height-lg;
+  padding: 0 $spacing-md;
+  background: #F0FAFA;
+  border-radius: $radius-sm;
+  font-size: $font-size-md;
+  color: $color-text;
+  box-sizing: border-box;
+}
+
+/* ═══ 今日 / 本周统计双卡 ═══ */
+.stats {
+  display: flex;
+  gap: $spacing-md;
+  margin: 0 $spacing-lg $spacing-lg;
+}
+
+.stat-card {
+  @include surface-block;
+  flex: 1;
+  padding: $spacing-md;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.stat-label {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.stat-value {
+  font-size: 40rpx;
+  font-weight: 600;
+  color: $color-primary;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-sub {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+/* ═══ Section 标题 ═══ */
+/* ⚠️ 必须带上 margin-top：下面紧跟的是「最近学习」「AI 学习总结」两个分区标题，
+   上一个兄弟块（.stats / .chart-block / .recent-list）有的只有 padding 没有 margin-bottom
+   → 不补上边距时标题会**紧贴**上方卡片，两个模块之间几乎没有距离。
+   块级相邻 margin 会折叠取较大值，所以这里取 $spacing-xl（48rpx）而不会被压回 32rpx。 */
+.section-title {
+  font-size: $font-size-lg;
+  font-weight: 600;
+  color: $color-text;
+  margin: $spacing-xl 0 $spacing-md;
+  padding: 0 $spacing-lg;
+}
+
+/* ═══ 柱状图 ═══ */
+/* 标题行在卡片之外，与「最近学习」同级；右侧附带本周合计 */
+.chart-head-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.chart-meta {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+/* 本周无数据时的空态提示：周一凌晨打开最容易遇到（本周刚重置），
+   不写这句会被误认为图表坏了 */
+.chart-empty {
+  margin-bottom: $spacing-sm;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  text-align: center;
+}
+
+.chart-block {
+  @include surface-block;
+  margin: 0 $spacing-lg;
+  padding: $spacing-lg $spacing-md $spacing-md;
+}
+
+.chart-row {
+  display: flex;
+  align-items: flex-end;
+  gap: $spacing-sm;
+}
+
+.chart-col {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 数值行：固定高度占位，空数据日留白，七列始终对齐 */
+.chart-value {
+  height: 30rpx;
+  line-height: 30rpx;
+  font-size: 20rpx;
+  font-weight: 600;
+  color: $color-primary;
+}
+
+/* 绘图区：柱子从底部生长，高度由内联 style 百分比控制 */
+.chart-plot {
+  width: 100%;
+  height: 180rpx;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.chart-bar {
+  width: 56%;
+  max-width: 40rpx;
+  height: 0;
+  border-radius: $radius-sm $radius-sm 0 0;
+  background: rgba(29, 181, 181, 0.3);
+
+  &--active {
+    background: linear-gradient(180deg, $color-primary 0%, $color-accent 100%);
+  }
+}
+
+.chart-label {
+  margin-top: 10rpx;
+  height: 30rpx;
+  line-height: 30rpx;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+
+  &--today {
+    color: $color-text;
+    font-weight: 600;
+  }
+
+  /* 本周尚未到达的日期：淡化，让「周中看本周」一眼分清已过/未来 */
+  &--future {
+    color: $color-text-faint;
+  }
+}
+
+/* ═══ 最近学习列表 ═══ */
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  padding: 0 $spacing-lg;
+}
+
+.recent-item {
+  @include surface-block;
+  position: relative;
+  padding: 20rpx $spacing-md 20rpx 32rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  overflow: hidden;
+
+  /* 左侧状态色条：一眼区分进行中 / 已完成 / 已结束 */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 18rpx;
+    bottom: 18rpx;
+    width: 6rpx;
+    border-radius: 0 6rpx 6rpx 0;
+    background: rgba(29, 181, 181, 0.45);
+  }
+
+  &--running::before {
+    background: $color-accent;
+  }
+
+  &--completed::before {
+    background: $color-success;
+  }
+
+  &--abandoned::before {
+    background: rgba(134, 144, 156, 0.5);
+  }
+}
+
+.recent-main {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.recent-goal {
+  flex: 1;
+  min-width: 0;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $color-text;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  &--ph {
+    color: $color-text-secondary;
+    font-weight: 400;
+  }
+}
+
+.recent-status {
+  flex-shrink: 0;
+  font-size: $font-size-2xs;
+  padding: 2rpx 14rpx;
+  border-radius: 999rpx;
+  background: rgba(29, 181, 181, 0.12);
+  color: $color-accent;
+
+  &--completed {
+    background: rgba(76, 175, 80, 0.14);
+    color: $color-success;
+  }
+
+  &--running {
+    background: rgba(29, 181, 181, 0.12);
+    color: $color-accent;
+  }
+
+  &--abandoned {
+    background: rgba(134, 144, 156, 0.14);
+    color: $color-text-secondary;
+  }
+}
+
+.recent-stats {
+  flex-shrink: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6rpx;
+  margin-left: $spacing-sm;
+}
+
+.recent-stat__value {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: $color-text;
+  font-variant-numeric: tabular-nums;
+}
+
+.recent-stat__label {
+  font-size: $font-size-2xs;
+  color: $color-text-secondary;
+  margin-right: 8rpx;
+
+  &:last-child {
+    margin-right: 0;
+  }
+}
+
+.recent-sub {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+}
+
+.recent-time {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.recent-time__arrow {
+  color: rgba(127, 140, 141, 0.6);
+}
+
+/* ═══ AI 总结 ═══ */
+.ai-summary {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  margin: 0 $spacing-lg $spacing-xl;
+}
+
+.ai-summary-card {
+  @include surface-block;
+  padding: $spacing-lg;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+
+  &--idle {
+    align-items: stretch;
+  }
+}
+
+.ai-summary-meta {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  flex-wrap: wrap;
+}
+
+.ai-summary-tag {
+  font-size: $font-size-xs;
+  padding: 4rpx 16rpx;
+  border-radius: $radius-sm;
+
+  &--ai {
+    background: rgba(22, 119, 255, 0.18);
+    color: $color-success;
+  }
+
+  &--fallback {
+    background: rgba(224, 159, 62, 0.16);
+    color: $color-warning;
+  }
+}
+
+.ai-summary-stats {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.ai-summary-text {
+  font-size: $font-size-md;
+  color: #1A1A1A;
+  line-height: 1.6;
+}
+
+.ai-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.ai-suggestion {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  line-height: 1.5;
+}
+
+.ai-summary-actions {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  margin-top: $spacing-xs;
+}
+
+/* 未生成时的可视化引导头：✨ 图标 + 本周真实数据 */
+.ai-idle {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.ai-idle__icon {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: rgba(29, 181, 181, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44rpx;
+  line-height: 1;
+}
+
+.ai-idle__meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.ai-idle__title {
+  font-size: $font-size-md;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.ai-idle__sub {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+/* ═══════════════════════════════════════════════
+   学习记录编辑
+   ═══════════════════════════════════════════════ */
+
+.recent-edit {
+  margin-left: auto;
+  padding: 8rpx 28rpx;
+  font-size: $font-size-xs;
+  color: $color-primary;
+  background: #fff;
+  border: 2rpx solid rgba(29, 181, 181, 0.45);
+  border-radius: 999rpx;
+}
+
+.edit-mask {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xl;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.edit-dialog {
+  width: 100%;
+  padding: $spacing-lg;
+  background: $color-surface;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-soft;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.edit-title {
+  font-size: $font-size-lg;
+  color: $color-text;
+  font-weight: 500;
+}
+
+.edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.edit-label {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.edit-input {
+  height: $control-height-md;
+  padding: 0 $spacing-md;
+  font-size: $font-size-md;
+  color: $color-text;
+  background: $color-bg;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-md;
+  box-sizing: border-box;
+}
+
+.edit-input[disabled] {
+  color: $color-text-secondary;
+  background: $color-surface;
+}
+
+.edit-tip {
+  font-size: $font-size-xs;
+  color: $color-warning;
+}
+
+.edit-actions {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: $spacing-xs;
+}
+
+/* 编辑弹窗内的删除入口：弱化的红字，与主操作拉开距离 */
+.edit-delete {
+  margin-top: $spacing-md;
+  padding: 16rpx 0 4rpx;
+  border-top: 2rpx solid rgba(0, 0, 0, 0.05);
+  text-align: center;
+  font-size: $font-size-sm;
+  color: #e5484d;
+}
+
+/* ═══════════════════════════════════════════════
+   番茄钟：阶段卡片与到点提醒
+   ═══════════════════════════════════════════════ */
+
+.phase-card {
+  margin-top: $spacing-md;
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  background: #FFF7ED;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.phase-card--break {
+  background: #F0FAFA;
+}
+
+.phase-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.phase-name {
+  font-size: $font-size-md;
+  font-weight: 500;
+  color: $color-text;
+}
+
+.phase-config {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.phase-remain {
+  font-size: $font-size-hero;
+  font-weight: 500;
+  color: $color-primary;
+  line-height: 1.2;
+}
+
+.phase-bar {
+  height: 12rpx;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: $radius-sm;
+  overflow: hidden;
+}
+
+.phase-bar__fill {
+  height: 100%;
+  border-radius: $radius-sm;
+  transition: width 0.3s linear;
+}
+
+.phase-bar__fill--focus {
+  background: $color-warning;
+}
+
+.phase-bar__fill--break {
+  background: $color-primary;
+}
+
+/* 阶段流转指示：专注 → 休息，当前阶段高亮 */
+.phase-steps {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.phase-step {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+
+  &__dot {
+    width: 14rpx;
+    height: 14rpx;
+    border-radius: 50%;
+    background: rgba(127, 140, 141, 0.35);
+  }
+
+  &--on {
+    color: $color-text;
+    font-weight: 500;
+
+    .phase-step__dot {
+      background: $color-warning;
+      box-shadow: 0 0 0 6rpx rgba(224, 159, 62, 0.18);
+    }
+  }
+
+  &__link {
+    font-size: $font-size-xs;
+    color: rgba(127, 140, 141, 0.6);
+  }
+}
+
+.phase-dialog {
+  width: 100%;
+  padding: $spacing-lg;
+  background: $color-surface;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-soft;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.phase-dialog__title {
+  font-size: $font-size-lg;
+  color: $color-text;
+  font-weight: 500;
+}
+
+.phase-dialog__body {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+}
+
+.idle-config {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  padding: $spacing-sm $spacing-md;
+  margin-top: $spacing-sm;
+  background: $color-bg;
+  border-radius: $radius-sm;
+}
+
+.idle-config__text {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.idle-config__chips {
+  display: flex;
+  gap: $spacing-xs;
+}
+
+.idle-config__link {
+  font-size: $font-size-sm;
+  color: $color-primary;
+}
+
+.preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+}
+
+.preset-chip {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 10rpx 0;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  background: #fff;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-sm;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.preset-chip--on {
+  color: #fff;
+  background: $color-primary;
+  border-color: $color-primary;
+}

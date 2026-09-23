@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "扫码签到",
+  "navigationBarBackgroundColor": "#1DB5B5",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#FFFFFF",
+  "backgroundTextStyle": "dark",
+  "usingComponents": {}
+}

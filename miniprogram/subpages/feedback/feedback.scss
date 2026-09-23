@@ -1,0 +1,328 @@
+@import '../../styles/variables.scss';
+
+.page {
+  padding: $spacing-lg;
+  background: $color-bg-page;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.page-title {
+  font-size: $font-size-xl;
+  font-weight: 600;
+  color: $color-text;
+  margin-bottom: $spacing-lg;
+}
+
+.card {
+  background: $color-surface;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-sizing: border-box;
+}
+
+.field-label {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin: $spacing-md 0 $spacing-sm;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+.cat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.cat-chip {
+  padding: 12rpx 28rpx;
+  border-radius: $radius-lg;
+  background: $color-bg-page;
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+  box-sizing: border-box;
+  border: 2rpx solid transparent;
+
+  &--on {
+    background: rgba(29, 181, 181, 0.12);
+    color: $color-primary;
+    border-color: $color-primary;
+    font-weight: 600;
+  }
+}
+
+.fb-textarea {
+  width: 100%;
+  height: 220rpx;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  box-sizing: border-box;
+  font-size: $font-size-md;
+  color: $color-text;
+  line-height: 1.5;
+}
+
+.img-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.img-item {
+  position: relative;
+  width: 150rpx;
+  height: 150rpx;
+  border-radius: $radius-md;
+  overflow: hidden;
+}
+
+.img-thumb {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.img-del {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 36rpx;
+  height: 36rpx;
+  line-height: 36rpx;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 22rpx;
+  border-bottom-left-radius: $radius-md;
+}
+
+.img-add {
+  width: 150rpx;
+  height: 150rpx;
+  border-radius: $radius-md;
+  border: 2rpx dashed $color-border;
+  color: $color-text-secondary;
+  font-size: 60rpx;
+  line-height: 146rpx;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.fb-submit {
+  margin-top: $spacing-lg;
+  width: 100%;
+}
+
+.fb-tip {
+  margin-top: $spacing-md;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ═══ 我的反馈（客服闭环用户侧） ═══ */
+
+.section-title {
+  margin: $spacing-xl 0 $spacing-md;
+  font-size: $font-size-md;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.fb-mine__error,
+.fb-mine__empty {
+  padding: $spacing-lg;
+  text-align: center;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.fb-mine__card {
+  background: $color-surface;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-sizing: border-box;
+}
+
+.fb-mine__head {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.fb-mine__cat {
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.fb-mine__status {
+  padding: 2rpx 16rpx;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  background: $color-bg-page;
+  color: $color-text-secondary;
+
+  /* 已回复：中间态，主色 —— 用户看到它就知道「还能继续问」 */
+  &--replied {
+    background: rgba(29, 181, 181, 0.14);
+    color: $color-primary;
+  }
+
+  &--handled {
+    background: rgba(29, 181, 132, 0.12);
+    color: $color-success;
+  }
+}
+
+.fb-mine__time {
+  margin-left: auto;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.fb-mine__content {
+  margin-top: $spacing-sm;
+  font-size: $font-size-sm;
+  color: $color-text;
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+.fb-mine__imgs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  margin-top: $spacing-sm;
+}
+
+.fb-mine__img {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: $radius-sm;
+}
+
+/* 官方回复：浅青底 + 左侧主色竖条，与用户正文区分 */
+.fb-mine__reply {
+  margin-top: $spacing-md;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-sm;
+  background: rgba(29, 181, 181, 0.08);
+  border-left: 6rpx solid $color-primary;
+}
+
+.fb-mine__reply-tag {
+  display: block;
+  font-size: $font-size-xs;
+  font-weight: 600;
+  color: $color-primary;
+}
+
+.fb-mine__reply-text {
+  display: block;
+  margin-top: 4rpx;
+  font-size: $font-size-sm;
+  color: $color-text;
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+/* 我的追问：橙色底，与官方回复（青色）区分，一眼看出谁说的 */
+.fb-mine__followup {
+  margin-top: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-sm;
+  background: rgba(245, 166, 35, 0.1);
+  border-left: 6rpx solid $color-warning;
+}
+
+.fb-mine__followup-tag {
+  font-size: $font-size-xs;
+  font-weight: 600;
+  color: $color-warning;
+}
+
+.fb-mine__followup-text {
+  display: block;
+  margin-top: 4rpx;
+  font-size: $font-size-sm;
+  color: $color-text;
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+.fb-mine__followup-time {
+  display: block;
+  margin-top: 4rpx;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+/* 已回复后的追问 / 确认解决操作区 */
+.fb-mine__acts {
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 2rpx solid $color-border;
+}
+
+.fb-mine__input {
+  width: 100%;
+  min-height: 140rpx;
+  padding: $spacing-sm $spacing-md;
+  box-sizing: border-box;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  color: $color-text;
+  line-height: 1.5;
+}
+
+.fb-mine__acts-row {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-sm;
+}
+
+.fb-mine__acts-row .btn {
+  flex: 1;
+  margin: 0;
+}
+
+/* ═══ 工单 → 人工升级区 ═══ */
+
+.fb-upgrade {
+  margin: $spacing-xl $spacing-lg;
+  padding: $spacing-lg;
+  background: $color-surface;
+  border-radius: $radius-lg;
+}
+
+.fb-upgrade__title {
+  font-size: $font-size-md;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.fb-upgrade__desc {
+  margin-top: $spacing-xs;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: 1.6;
+}
+
+.fb-upgrade__row {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+}
+
+.fb-upgrade__btn {
+  flex: 1;
+  margin: 0;
+}

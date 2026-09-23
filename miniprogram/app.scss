@@ -1,0 +1,146 @@
+@import './styles/variables.scss';
+@import './styles/mixins.scss';
+
+page {
+  background-color: $color-bg;
+  color: $color-text;
+  font-family: $font-family;
+  font-size: $font-size-md;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+
+view,
+text,
+button,
+input,
+textarea,
+scroll-view {
+  box-sizing: border-box;
+}
+
+/* 重置微信小程序 <button> 默认样式（默认绿底/圆角/内边距会覆盖自定义样式） */
+button {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+
+  &::after {
+    display: none;
+  }
+}
+
+/* ---------- 自绘按钮（全局） ---------- */
+/* 替代 TDesign t-button：t-button 在部分页面渲染成裸文本，统一改用原生 button + 以下类 */
+.btn {
+  display: block;
+  width: 100%;
+  margin: 0;
+  border: none;
+  border-radius: $radius-md;
+  padding: 20rpx 24rpx;
+  font-size: $font-size-md;
+  line-height: 1.4;
+  text-align: center;
+  color: $color-text;
+  background: #F0FAFA;
+  transition: opacity 0.15s ease;
+}
+
+.btn--large {
+  padding: 24rpx;
+  font-size: $font-size-lg;
+  border-radius: $radius-lg;
+}
+
+.btn--medium {
+  padding: 16rpx 24rpx;
+  font-size: $font-size-sm;
+}
+
+.btn--primary {
+  background: $color-primary;
+  color: #fff;
+}
+
+.btn--ghost {
+  background: transparent;
+  color: $color-primary;
+  border: 1px solid rgba(29, 181, 181, 0.35);
+}
+
+.btn--danger {
+  background: transparent;
+  color: $color-danger;
+  border: 1px solid rgba(229, 77, 66, 0.4);
+}
+
+.btn[disabled],
+.btn.btn--disabled {
+  opacity: 0.5;
+}
+
+.page {
+  min-height: 100vh;
+  padding: $spacing-lg;
+}
+
+.page-title {
+  font-size: $font-size-xl;
+  font-weight: 600;
+  color: $color-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.page-subtitle {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-lg;
+}
+
+.section {
+  margin-bottom: $spacing-xl;
+}
+
+.section-title {
+  font-size: $font-size-lg;
+  font-weight: 600;
+  margin-bottom: $spacing-md;
+}
+
+/* ---------- 统一转场动画 ---------- */
+/* 数据加载完成后内容淡入上移入场，节奏统一（约 300ms 缓出） */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(16rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 页面内容块挂载后的统一入场（标题/副标题/loading/空态除外） */
+.page > view:not(.page-title):not(.page-subtitle) {
+  animation: fade-in-up 0.3s ease-out both;
+}
+
+/* 列表容器：子项依次轻量入场，错峰防止整体僵直 */
+.list-in > view {
+  animation: fade-in-up 0.3s ease-out both;
+}
+.list-in > view:nth-child(2) {
+  animation-delay: 0.04s;
+}
+.list-in > view:nth-child(3) {
+  animation-delay: 0.08s;
+}
+.list-in > view:nth-child(4) {
+  animation-delay: 0.12s;
+}

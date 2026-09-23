@@ -1,0 +1,6 @@
+{
+  "name": "shared",
+  "version": "1.0.0",
+  "description": "云函数公共模块（无 npm 依赖；本地测试时确保按 CommonJS 解析，云端默认 CJS）",
+  "main": "index.js"
+}

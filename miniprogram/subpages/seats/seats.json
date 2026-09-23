@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "座位",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "seat-map": "/components/SeatMap/SeatMap",
+    "empty-state": "/components/EmptyState/EmptyState",
+    "loading-state": "/components/LoadingState/LoadingState"
+  }
+}

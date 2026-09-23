@@ -1,0 +1,61 @@
+// 色彩：青绿 + 蓝 主色系（与首页 header 渐变、自习室导航栏统一）
+$color-primary: #1DB5B5;          // 青绿 · 主品牌色（标题 / 主按钮 / 激活态）
+$color-primary-light: #A8E6E6;    // 浅青绿 · 渐变 / hover
+$color-accent: #1677FF;           // 蓝 · 强调 / CTA（与首页主按钮、tab 选中一致）
+$color-bg: #FFFFFF;               // 纯白 · 页面底（除首页/自习室外的统一背景）
+$color-bg-page: #F0FAFA;          // 极浅青 · 数据看板类页面底（与 app.json 页面底色一致，衬托白卡片）
+$color-surface: #FFFFFF;          // 纯白 · 卡片
+$color-text: #2C3E50;             // 深墨 · 主文字
+$color-text-secondary: #7F8C8D;   // 冷灰 · 次文字
+$color-text-faint: #B4BDBD;       // 极浅灰 · 未到达/占位文字（如柱状图未来的日期轴）
+$color-border: #E8F4F4;           // 浅青 · 边线
+$color-danger: #E54D42;           // 红 · 错误 / 危险
+$color-warning: #FAAD14;          // 琥珀 · 警告
+$color-success: #36B37E;          // 青绿 · 成功
+$color-seat-free: #36B37E;        // 绿 · 空闲（可点）
+$color-seat-reserved: #E5484D;    // 红 · 已约
+$color-seat-in-use: #E5484D;      // 红 · 使用中（与已约同色，均不可点）
+$color-seat-maintain: #9CA3AF;    // 灰 · 维护（灰暗不可点）
+
+/* —— 状态提示条（浅底 + 描边 + 深色文字）——
+   统一在此定义，避免各页面重复书写裸 rgba */
+$color-warning-soft: rgba(250, 173, 20, 0.1);      // 琥珀底
+$color-warning-border: rgba(250, 173, 20, 0.45);   // 琥珀描边
+$color-warning-ink: #8A6100;                       // 琥珀底上的可读文字
+$color-danger-soft: rgba(229, 77, 66, 0.1);        // 红底（数据不可信等严重提示）
+$color-danger-border: rgba(229, 77, 66, 0.4);      // 红描边
+$color-danger-ink: #A32B22;                        // 红底上的可读文字
+$color-muted-soft: rgba(127, 140, 141, 0.12);      // 灰底（未知/占位状态）
+$color-muted-surface: rgba(127, 140, 141, 0.9);    // 灰面（未知状态徽标）
+$color-muted-ink: #5F6B6B;                         // 灰调文字
+
+$font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+$font-size-2xs: 20rpx;
+$font-size-xs: 22rpx;
+$font-size-sm: 24rpx;
+$font-size-md: 28rpx;
+$font-size-lg: 32rpx;
+$font-size-xl: 40rpx;
+$font-size-hero: 48rpx;
+/** 用于番茄钟大数字等超大展示字号 */
+$size-stat-hero: 80rpx;
+
+/** 表单控件高度：输入框 / 编辑框统一取用，避免各处裸值不一 */
+$control-height-sm: 80rpx;   // 紧凑场景（管理后台等）
+$control-height-md: 88rpx;   // 常规单行输入
+$control-height-lg: 100rpx;  // 突出输入（学习目标、计划输入）
+
+$spacing-xs: 8rpx;
+$spacing-sm: 16rpx;
+$spacing-md: 24rpx;
+$spacing-lg: 32rpx;
+$spacing-xl: 48rpx;
+$spacing-xxl: 64rpx;  // 卡片矩阵等需要明显呼吸感的场景（如管理后台 KPI 宫格）
+
+/* 小标签/胶囊专用：比 sm 更收敛，admin 反馈状态标签等用到（$radius-xs 曾被引用但未定义，编译报错） */
+$radius-xs: 4rpx;
+$radius-sm: 8rpx;
+$radius-md: 16rpx;
+$radius-lg: 24rpx;
+
+$shadow-soft: 0 8rpx 24rpx rgba(29, 181, 181, 0.1);

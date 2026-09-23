@@ -1,0 +1,539 @@
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+.page {
+  background: #FFFFFF;
+  min-height: 100vh;
+}
+
+.page-title {
+  color: #1DB5B5;
+}
+
+.tab-row {
+  display: flex;
+  gap: $spacing-sm;
+  margin: $spacing-md 0 $spacing-lg;
+  flex-wrap: wrap;
+}
+
+.tab-chip {
+  padding: 12rpx 24rpx;
+  border-radius: 999rpx;
+  background: rgba(29, 181, 181, 0.06);
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+  transition: all 0.2s ease;
+}
+
+.tab-chip--active {
+  background: $color-primary;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* 即将开始提醒 */
+.upcoming-banner {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  background: rgba(224, 159, 62, 0.14);
+  border: 1px solid rgba(224, 159, 62, 0.4);
+  border-radius: $radius-lg;
+  padding: $spacing-md $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+.upcoming-icon {
+  font-size: 40rpx;
+}
+
+.upcoming-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.upcoming-seat {
+  font-size: $font-size-md;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.upcoming-desc {
+  font-size: $font-size-sm;
+  color: $color-warning;
+}
+
+.reservation-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.reservation-card {
+  @include surface-block;
+  padding: $spacing-lg;
+}
+
+.reservation-head {
+  @include flex-between;
+  margin-bottom: $spacing-sm;
+}
+
+.reservation-seat {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.reservation-seat__name {
+  font-size: $font-size-lg;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.reservation-seat__room {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.reservation-status {
+  font-size: $font-size-sm;
+  padding: 4rpx 14rpx;
+  border-radius: 999rpx;
+  background: rgba(29, 181, 181, 0.08);
+  color: $color-text-secondary;
+}
+
+.reservation-status--pending_checkin {
+  background: rgba(224, 159, 62, 0.16);
+  color: $color-warning;
+}
+
+.reservation-status--active {
+  background: rgba(29, 181, 181, 0.16);
+  color: $color-success;
+}
+
+.reservation-status--paused {
+  background: rgba(224, 159, 62, 0.18);
+  color: $color-warning;
+}
+
+.reservation-status--completed {
+  background: rgba(22, 119, 255, 0.18);
+  color: $color-success;
+}
+
+.reservation-status--cancelled {
+  background: rgba(107, 114, 128, 0.18);
+  color: $color-text-secondary;
+}
+
+.reservation-status--no_show {
+  background: rgba(229, 77, 66, 0.14);
+  color: $color-danger;
+}
+
+/* 倒计时/状态提示 */
+.reservation-countdown {
+  display: inline-block;
+  font-size: $font-size-sm;
+  padding: 6rpx 16rpx;
+  border-radius: 999rpx;
+  margin-bottom: $spacing-sm;
+  background: rgba(107, 114, 128, 0.12);
+  color: $color-text-secondary;
+}
+
+.reservation-countdown--soon {
+  background: rgba(224, 159, 62, 0.16);
+  color: $color-warning;
+}
+
+.reservation-countdown--active {
+  background: rgba(29, 181, 181, 0.16);
+  color: $color-success;
+}
+
+.reservation-countdown--idle {
+  background: rgba(29, 181, 181, 0.1);
+  color: $color-primary;
+}
+
+.reservation-countdown--done {
+  background: rgba(229, 77, 66, 0.12);
+  color: $color-danger;
+}
+
+/* ═══ 违约 / 座位释放倒计时警示条 ═══
+   待签到超 15 分钟、暂离超 30 分钟都会被自动释放座位并记爽约，
+   提前把「还剩多久」摆出来，避免用户毫无预警地丢座位 + 背一次违约。 */
+.release-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-xs;
+  padding: 12rpx $spacing-md;
+  margin-bottom: $spacing-sm;
+  border-radius: $radius-md;
+  background: $color-warning-soft;
+  border: 1px solid $color-warning-border;
+}
+
+.release-banner__icon {
+  flex-shrink: 0;
+  font-size: $font-size-sm;
+  line-height: 1.6;
+}
+
+.release-banner__text {
+  flex: 1;
+  font-size: $font-size-sm;
+  line-height: 1.6;
+  color: $color-warning-ink;
+}
+
+/* 剩余不足 5 分钟：升级为红色，强调「即将释放」 */
+.release-banner--danger {
+  background: $color-danger-soft;
+  border-color: $color-danger-border;
+}
+
+.release-banner--danger .release-banner__text {
+  color: $color-danger-ink;
+}
+
+/* 已经释放：转灰表示已成定局，不再喊急 */
+.release-banner--released {
+  background: $color-muted-soft;
+  border-color: $color-muted-surface;
+}
+
+.release-banner--released .release-banner__text {
+  color: $color-muted-ink;
+}
+
+.reservation-time {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  margin-bottom: $spacing-sm;
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+}
+
+.reservation-goal {
+  color: $color-text;
+  font-size: $font-size-md;
+  margin-bottom: $spacing-sm;
+}
+
+/* 待签到二维码区已于 2026-09-19 删除（详见 wxml 注释），
+   对应的 .checkin-box / .checkin-qr / .checkin-qr__tip / .checkin-actions 一并移除 */
+
+/* 已过签到时限：收起签到区，明确告知不可再签到 */
+.checkin-closed {
+  padding: $spacing-md;
+  margin-bottom: $spacing-sm;
+  border-radius: $radius-lg;
+  background: $color-muted-soft;
+  border: 1px dashed $color-muted-surface;
+}
+
+.checkin-closed__text {
+  font-size: $font-size-sm;
+  line-height: 1.6;
+  color: $color-muted-ink;
+}
+
+/* 主行动 + 「更多」：主按钮占满剩余宽度，辅助项固定宽 */
+.reservation-actions {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-sm;
+}
+
+.reservation-actions .btn {
+  flex: 1;
+  width: auto;
+  text-align: center;
+}
+
+/* 展开后的次级操作：两列，弱化为描边按钮 */
+.reservation-actions--more {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  margin-top: $spacing-xs;
+}
+
+.more-toggle {
+  flex: 0 0 auto;
+  padding: 12rpx 20rpx;
+  border-radius: 12rpx;
+  font-size: $font-size-sm;
+  line-height: 1.6;
+  color: $color-text-secondary;
+  background: $color-surface;
+  border: 2rpx solid $color-border;
+}
+
+.btn {
+  border-radius: 12rpx;
+  padding: 12rpx 24rpx;
+  font-size: $font-size-sm;
+  border: none;
+  line-height: 1.6;
+}
+
+.btn--primary {
+  background: $color-primary;
+  color: #fff;
+}
+
+.btn--ghost {
+  background: transparent;
+  color: $color-primary;
+  border: 1px solid rgba(29, 181, 181, 0.35);
+}
+
+.btn--danger {
+  background: transparent;
+  color: $color-danger;
+  border: 1px solid rgba(229, 77, 66, 0.4);
+}
+
+.btn[disabled] {
+  opacity: 0.5;
+}
+
+.reservation-foot {
+  margin-top: $spacing-sm;
+}
+
+.map-link {
+  font-size: $font-size-sm;
+  color: $color-primary;
+}
+
+/* ══════════════════ 弹层外壳 ══════════════════
+   ⚠️ 这两条曾经整段丢失（wxml 还在用 .sheet-mask / .sheet-panel，样式却没了），
+   后果是：四个弹层失去 position: fixed 与遮罩，直接变成「钉在页面最底部的
+   表单块」——看起来像常驻页面内容，且因为渲染在列表下方、不在可视区，
+   点按钮会显得「毫无反应」。改动本页弹层结构时务必保留这一段。 */
+.sheet-mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.sheet-panel {
+  width: 100%;
+  box-sizing: border-box;
+  animation: sheet-up 0.22s ease-out;
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* 改约抽屉 */
+.reschedule-sheet {
+  background: #fff;
+  border-radius: 24rpx 24rpx 0 0;
+  padding: $spacing-xl $spacing-lg calc(#{$spacing-lg} + env(safe-area-inset-bottom));
+}
+
+.reschedule-title {
+  font-size: $font-size-lg;
+  font-weight: 600;
+  color: $color-text;
+  margin-bottom: $spacing-lg;
+}
+
+.reschedule-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: $control-height-md;
+  padding: $spacing-sm 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
+}
+
+.reschedule-label {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+}
+
+.reschedule-value {
+  font-size: $font-size-md;
+  color: $color-text;
+}
+
+.reschedule-actions {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-xl;
+}
+
+/* —— 续时弹层 —— */
+.extend-note {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-md;
+}
+
+.extend-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-sm;
+}
+
+.extend-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
+  padding: $spacing-lg 0;
+  background: rgba(29, 181, 181, 0.08);
+  border: 2rpx solid rgba(29, 181, 181, 0.25);
+  border-radius: $radius-md;
+  transition: all 0.15s ease;
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.extend-option__num {
+  font-size: $font-size-xl;
+  font-weight: 700;
+  color: $color-primary;
+}
+
+.extend-option__unit {
+  font-size: $font-size-2xs;
+  color: $color-text-secondary;
+}
+
+/* —— 评价弹层 —— */
+.review-note {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-md;
+}
+
+.review-stars {
+  display: flex;
+  justify-content: center;
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.review-star {
+  font-size: 64rpx;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.18);
+  transition: transform 0.1s ease;
+
+  &:active {
+    transform: scale(0.9);
+  }
+}
+
+.review-star--on {
+  color: #ffb400;
+}
+
+.review-input-wrap {
+  border: 2rpx solid rgba(0, 0, 0, 0.1);
+  border-radius: $radius-md;
+  padding: $spacing-sm $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.review-input {
+  width: 100%;
+  min-height: 100rpx;
+  font-size: $font-size-sm;
+  color: $color-text;
+}
+
+.review-placeholder {
+  color: $color-text-secondary;
+}
+
+/* —— 取消 / 结束使用确认弹层（自绘，替代 wx.showModal）——
+   必须自绘：原生 showModal 的 await 会丢失「用户点击手势」，
+   之后调 wx.requestSubscribeMessage 会报 TAP gesture 失败，授权卡弹不出来。 */
+.confirm-sheet {
+  background: $color-surface;
+  border-radius: $radius-lg $radius-lg 0 0;
+  padding: $spacing-xl $spacing-lg calc(#{$spacing-lg} + env(safe-area-inset-bottom));
+}
+
+.confirm-title {
+  font-size: $font-size-lg;
+  font-weight: 600;
+  color: $color-text;
+  margin-bottom: $spacing-md;
+}
+
+.confirm-text {
+  font-size: $font-size-md;
+  color: $color-text;
+  line-height: 1.6;
+}
+
+.confirm-note {
+  margin-top: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  background: rgba(29, 181, 181, 0.08);
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-xl;
+}
+
+.confirm-btn {
+  flex: 1;
+  height: $control-height-md;
+  line-height: $control-height-md;
+  text-align: center;
+  border-radius: $radius-md;
+  font-size: $font-size-md;
+  font-weight: 600;
+}
+
+.confirm-btn--ghost {
+  background: $color-bg-page;
+  color: $color-text-secondary;
+}
+
+.confirm-btn--primary {
+  background: $color-primary;
+  color: #FFFFFF;
+}
+
+.confirm-btn--danger {
+  background: $color-danger;
+  color: #FFFFFF;
+}

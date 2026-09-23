@@ -1,0 +1,245 @@
+<view class="page home">
+  <!-- ═══ 青绿渐变头部 ═══ -->
+  <view class="home-header" style="padding-top: {{statusBarHeight}}rpx;">
+    <view class="header-content">
+      <text class="header-title">专注座</text>
+      <!-- 设置齿轮（CSS 绘制，不用图片） -->
+      <view class="icon-gear" bindtap="goSettings">
+        <text class="icon-gear__inner">⚙</text>
+      </view>
+    </view>
+    <text class="header-subtitle">开始高效自习</text>
+  </view>
+
+  <!-- ═══ 登录失败横幅（非阻断：云端不可用时提示 + 一键重试） ═══ -->
+  <view wx:if="{{loginError}}" class="login-banner">
+    <view class="login-banner__icon">!</view>
+    <view class="login-banner__body">
+      <text class="login-banner__title">登录状态异常</text>
+      <text class="login-banner__desc">{{loginError}}</text>
+    </view>
+    <button
+      class="login-banner__btn"
+      size="mini"
+      loading="{{loginRetrying}}"
+      disabled="{{loginRetrying}}"
+      bindtap="onRetryLogin"
+    >重试</button>
+  </view>
+
+  <!-- ═══ Hero 卡片（叠层：跨渐变边界） ═══ -->
+  <view class="hero-card">
+    <view class="hero-card__left">
+      <image
+        class="hero-card__illustration"
+        src="/assets/icons/icon-desk-simple.jpg"
+        mode="aspectFit"
+      />
+    </view>
+    <view class="hero-card__actions">
+      <button class="btn btn--primary" bindtap="goRooms">浏览自习座</button>
+      <button class="btn btn--outline" bindtap="goStudy">学习记录</button>
+    </view>
+  </view>
+
+  <!-- ═══ C2 待签到卡：有临近可签到预约时置顶展示，直连签到 ═══
+       原实现是一条纯文本横幅（upcomingBanner），只有「即将开始」一种文案，
+       用户约了之后不知道去哪里签到 —— 违约（no_show）很大概率就是这么来的。
+       现在放在 Hero 卡正下方：标题（距开始/可签到/即将超时）+ 副文案 + 「去签到」主按钮。 -->
+  <view wx:if="{{upcoming}}" class="checkin-card checkin-card--{{upcoming.level}}">
+    <view class="checkin-card__body">
+      <view class="checkin-card__badge">待签到</view>
+      <text class="checkin-card__title">{{upcoming.title}}</text>
+      <text class="checkin-card__desc">{{upcoming.desc}}</text>
+    </view>
+    <button
+      class="checkin-card__btn {{upcoming.canCheckin ? 'checkin-card__btn--active' : 'checkin-card__btn--disabled'}} {{checkinInFlight ? 'checkin-card__btn--loading' : ''}}"
+      bind:tap="onUpcomingCheckin"
+      disabled="{{!upcoming.canCheckin || checkinInFlight}}"
+    >
+      <view wx:if="{{checkinInFlight}}" class="checkin-card__spinner"></view>
+      <text wx:else>{{upcoming.canCheckin ? '去签到' : '等待开始'}}</text>
+    </button>
+  </view>
+
+  <!-- ═══ 快捷入口（热门场景） ═══ -->
+  <view class="section">
+    <text class="section-title">热门场景</text>
+    <view class="ai-grid">
+      <view wx:for="{{quickEntries}}" wx:key="mode" class="ai-card" bindtap="onQuickEntry" data-mode="{{item.mode}}">
+        <view class="ai-card__icon-wrap">
+          <image class="ai-card__icon" src="{{item.icon}}" mode="aspectFit" />
+        </view>
+        <text class="ai-card__name">{{item.name}}</text>
+        <text class="ai-card__desc">{{item.desc}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ═══ 学习计划输入 ═══ -->
+  <view class="section">
+    <text class="section-title">告诉我你的学习计划</text>
+    <view class="plan-input-row {{planInFlight ? 'plan-input-row--loading' : ''}}">
+      <input
+        class="plan-input"
+        placeholder="例如：今晚复习高数两小时"
+        placeholder-class="plan-input-ph"
+        value="{{goalInput}}"
+        bindinput="onGoalInput"
+        confirm-type="send"
+        bindsend="onPlanSubmit"
+        disabled="{{planInFlight}}"
+      />
+      <view class="plan-submit {{planInFlight ? 'plan-submit--loading' : ''}}" bindtap="onPlanSubmit">
+        <view wx:if="{{planInFlight}}" class="plan-submit__spinner"></view>
+        <text wx:else class="plan-submit__arrow">›</text>
+      </view>
+    </view>
+    <!-- 计划生成中提示 -->
+    <view wx:if="{{planInFlight}}" class="plan-loading-tip">
+      <text class="plan-loading-text">AI 正在为你制定学习计划…</text>
+    </view>
+  </view>
+
+  <!-- ═══ AI 选座：小卡片入口，点击直接推荐；结果以小卡片横滚展示（不用全宽弹层） ═══ -->
+  <view class="section">
+    <view class="recommend-entry {{recommendInFlight ? 'recommend-entry--loading' : ''}}" bind:tap="onRecommendSeats">
+      <view class="recommend-entry__body">
+        <text class="recommend-entry__title">AI 帮你选座</text>
+        <text class="recommend-entry__desc">{{recommendInFlight ? '正在挑座位…' : '按偏好从实时空闲座位里挑最合适的'}}</text>
+      </view>
+      <view wx:if="{{recommendInFlight}}" class="plan-submit__spinner"></view>
+      <text wx:else class="recommend-entry__arrow">›</text>
+    </view>
+
+    <!-- 偏好选择：常驻直出（不做收起/展开） -->
+    <view class="pref-panel">
+      <view wx:if="{{preferenceChips.length}}" class="pref-row">
+        <view
+          wx:for="{{preferenceChips}}"
+          wx:key="code"
+          class="pref-chip {{item.selected ? 'pref-chip--on' : ''}}"
+          data-code="{{item.code}}"
+          bind:tap="onTogglePreference"
+        >{{item.name}}</view>
+      </view>
+      <view class="pref-row">
+        <view
+          wx:for="{{durationOptions}}"
+          wx:key="value"
+          class="pref-chip {{index === durationIndex ? 'pref-chip--on' : ''}}"
+          data-index="{{index}}"
+          bind:tap="onSelectDuration"
+        >{{item.label}}</view>
+      </view>
+      <view class="pref-panel__go {{recommendInFlight ? 'is-loading' : ''}}" bind:tap="onStartRecommend">
+        <view wx:if="{{recommendInFlight}}" class="plan-submit__spinner"></view>
+        <text wx:else>重新推荐</text>
+      </view>
+    </view>
+
+    <!-- 推荐结果：小卡片横向滑动（与「热门场景」卡片同尺寸风格） -->
+    <view wx:if="{{recommendation}}" class="rec-mini-area">
+      <scroll-view wx:if="{{recommendation.picks.length}}" class="rec-mini-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+        <view
+          wx:for="{{recommendation.picks}}"
+          wx:key="{{item.room_id}}-{{item.seat_id}}"
+          class="rec-mini"
+        >
+          <text class="rec-mini__seat">{{item.seat_label || item.seat_id}}</text>
+          <text class="rec-mini__room">{{item.room_name}}</text>
+          <view wx:if="{{item.featureNames.length}}" class="rec-mini__feats">
+            <text wx:for="{{item.featureNames}}" wx:for-item="feat" wx:key="*this" class="rec-mini__feat">{{feat}}</text>
+          </view>
+          <text wx:if="{{item.reason}}" class="rec-mini__reason">{{item.reason}}</text>
+          <view
+            class="rec-mini__cta"
+            data-room-id="{{item.room_id}}"
+            data-room-name="{{item.room_name}}"
+            data-seat-id="{{item.seat_id}}"
+            bind:tap="onPickReservation"
+          >前往预约 ›</view>
+        </view>
+      </scroll-view>
+      <view wx:else class="rec-mini-empty">暂无推荐结果，试试调整偏好</view>
+    </view>
+  </view>
+
+  <!-- ═══ 学习计划弹窗 ═══ -->
+  <view wx:if="{{planVisible}}" class="plan-modal-mask" bindtap="onClosePlan">
+    <view class="plan-modal" catch:tap="">
+      <!-- 渐变头部 -->
+      <view class="plan-modal-hero">
+        <view class="plan-modal-hero__top">
+          <text class="plan-modal-title">学习计划</text>
+          <text class="plan-modal-source plan-modal-source--{{plan.source}}">
+            {{plan.source === 'ai' ? 'AI 生成' : '基础节奏'}}
+          </text>
+        </view>
+        <text class="plan-modal-goal">{{goalInput || '今晚的一次专注自习'}}</text>
+        <text wx:if="{{plan.summary}}" class="plan-modal-summary">{{plan.summary}}</text>
+      </view>
+
+      <!-- 分段时间轴 -->
+      <view class="plan-modal-body">
+        <view class="plan-modal-label">分段安排</view>
+        <view wx:if="{{plan.blocks.length}}" class="plan-modal-list">
+          <view
+            wx:for="{{plan.blocks}}"
+            wx:key="title"
+            class="plan-block plan-block--tappable"
+            bindtap="onStartPlan"
+            data-index="{{index}}"
+          >
+            <view class="plan-block-dot"></view>
+            <view class="plan-block-card">
+              <view class="plan-block-head">
+                <text class="plan-block-index">第{{index + 1}}段</text>
+                <text class="plan-block-title">{{item.title}}</text>
+                <text class="plan-block-duration">{{item.duration_min}} 分钟</text>
+              </view>
+              <text wx:if="{{item.tip}}" class="plan-block-tip">{{item.tip}}</text>
+              <text class="plan-block-cta">开始这一段 ›</text>
+            </view>
+          </view>
+        </view>
+        <view wx:else class="empty-picks">暂无计划块</view>
+
+        <!-- AI 课程推荐 -->
+        <view wx:if="{{planCourses}}" class="plan-courses">
+          <view class="plan-courses__head">
+            <view class="plan-courses__title-wrap">
+              <text class="plan-courses__spark">✦</text>
+              <text class="plan-courses__title">AI 课程推荐</text>
+            </view>
+            <view class="plan-courses__tag plan-courses__tag--{{planCourses.source}}">{{planCourses.source === 'ai' ? 'AI 生成' : '本地精选'}}</view>
+          </view>
+          <text class="plan-courses__topic">{{planCourses.topic}}</text>
+          <view class="plan-courses__list">
+            <view wx:for="{{planCourses.courses}}" wx:key="title" wx:for-index="cIdx" class="plan-course">
+              <view class="plan-course__index">{{cIdx + 1}}</view>
+              <view class="plan-course__main">
+                <view class="plan-course__head">
+                  <text class="plan-course__title">{{item.title}}</text>
+                  <text class="plan-course__level">{{item.level}}</text>
+                </view>
+                <text class="plan-course__reason">{{item.reason}}</text>
+                <view wx:if="{{item.tags.length}}" class="plan-course__tags">
+                  <text wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this" class="plan-course__tag">{{tag}}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+        <view wx:elif="{{planCoursesLoading}}" class="plan-courses-loading">AI 正在为你推荐课程…</view>
+
+        <button class="btn btn--primary plan-modal-cta" bindtap="onStartPlan" data-index="0">
+          {{plan.blocks.length ? '开始第 1 段专注' : '开始专注'}}
+        </button>
+        <view class="plan-modal-close" bindtap="onClosePlan">
+          <text class="plan-modal-close-text">先不开始</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,27 @@
+@import '../../styles/variables.scss';
+
+.badge {
+  display: inline-flex;
+  padding: 4rpx 14rpx;
+  border-radius: 999rpx;
+  font-size: $font-size-xs;
+  color: #fff;
+  background: $color-seat-free;
+}
+
+.badge-reserved,
+.badge-pending_checkin {
+  background: $color-seat-reserved;
+}
+
+.badge-in_use,
+.badge-in-use,
+.badge-active {
+  background: $color-seat-in-use;
+}
+
+.badge-maintain,
+.badge-cancelled,
+.badge-no_show {
+  background: $color-seat-maintain;
+}

@@ -1,0 +1,94 @@
+<view class="chat">
+  <!-- ═══ 渐变头部：品牌感 + 在线状态 ═══ -->
+  <view class="chat__hero">
+    <view class="chat__hero-card">
+      <view class="chat__hero-avatar">
+        <text class="chat__hero-avatar-text">AI</text>
+      </view>
+      <view class="chat__hero-body">
+        <view class="chat__hero-title">专注座 AI 客服</view>
+        <view class="chat__hero-status">
+          <view class="chat__hero-dot"></view>
+          <text>24 小时在线 · 智能秒回</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ═══ 消息区 ═══ -->
+  <scroll-view
+    class="chat__body"
+    scroll-y
+    scroll-into-view="{{scrollIntoView}}"
+    scroll-with-animation
+  >
+    <view
+      wx:for="{{msgs}}"
+      wx:key="id"
+      id="msg-{{item.id}}"
+      class="chat__row chat__row--{{item.role}}"
+    >
+      <!-- 欢迎卡片（首条 bot 消息位） -->
+      <view wx:if="{{item.welcome}}" class="welcome">
+        <view class="welcome__main">
+          <view class="welcome__title">你好，我是<text class="welcome__title-strong">专注座 AI 客服</text></view>
+          <view class="welcome__desc">预约、签到、设施、违约、通知……都可以问我。<text class="welcome__desc-muted">答不上来的，我会帮你转人工或提交工单。</text></view>
+        </view>
+        <view class="welcome__quick">
+          <view class="welcome__quick-title">试试这些问题</view>
+          <view class="welcome__quick-list">
+            <view
+              wx:for="{{quickQuestions}}"
+              wx:key="*this"
+              class="welcome__chip"
+              bindtap="onQuickTap"
+              data-q="{{item}}"
+            >{{item}}</view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 普通消息 -->
+      <block wx:else>
+        <view wx:if="{{item.role === 'bot'}}" class="chat__avatar"><text class="chat__avatar-text">AI</text></view>
+        <view class="chat__bubble">{{item.content}}<view wx:if="{{item.diagnostic}}" class="chat__diag">诊断码 {{item.diagnostic}}</view></view>
+      </block>
+    </view>
+
+    <!-- 正在输入（三点跳动） -->
+    <view wx:if="{{sending}}" class="chat__row chat__row--bot">
+      <view class="chat__avatar"><text class="chat__avatar-text">AI</text></view>
+      <view class="chat__bubble chat__typing">
+        <view class="chat__typing-dot"></view>
+        <view class="chat__typing-dot"></view>
+        <view class="chat__typing-dot"></view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- ═══ 人工出口（needHuman 时出现） ═══ -->
+  <view class="chat__human" wx:if="{{showHumanCta}}">
+    <view class="chat__human-title">这条我搞不定，帮你转真人</view>
+    <view class="chat__human-actions">
+      <button class="chat__human-btn" open-type="contact" session-from="aiChat">转人工客服</button>
+      <button class="chat__human-btn chat__human-btn--ghost" bindtap="goFeedback">提交工单</button>
+    </view>
+  </view>
+
+  <!-- ═══ 输入区 ═══ -->
+  <view class="chat__footer">
+    <input
+      class="chat__input"
+      placeholder="请输入你的问题，例如：怎么签到？"
+      placeholder-class="chat__input-ph"
+      confirm-type="send"
+      value="{{input}}"
+      bindinput="onInput"
+      bindconfirm="send"
+      maxlength="200"
+    />
+    <view class="chat__send {{sending || !input ? 'chat__send--disabled' : ''}}" bindtap="send">
+      <view class="chat__send-tri"></view>
+    </view>
+  </view>
+</view>

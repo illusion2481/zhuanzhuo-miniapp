@@ -1,0 +1,66 @@
+@import '../../styles/variables.scss';
+
+.page {
+  padding: $spacing-lg;
+  background: $color-bg-page;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.page-title {
+  font-size: $font-size-xl;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.faq-tip {
+  margin: $spacing-sm 0 $spacing-lg;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+/* 平铺展示，不做折叠：一屏就能扫完高频问题 */
+.faq-card {
+  background: $color-surface;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-sizing: border-box;
+}
+
+.faq-q {
+  font-size: $font-size-md;
+  font-weight: 600;
+  color: $color-text;
+  line-height: 1.5;
+}
+
+.faq-a {
+  margin-top: $spacing-sm;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.7;
+}
+
+.faq-foot {
+  margin-top: $spacing-xl;
+  text-align: center;
+}
+
+.faq-foot__title {
+  font-size: $font-size-md;
+  font-weight: 600;
+  color: $color-text;
+  margin-bottom: $spacing-md;
+}
+
+.faq-btn {
+  width: 100%;
+  margin-bottom: $spacing-md;
+}
+
+.faq-foot__tip {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: 1.6;
+}

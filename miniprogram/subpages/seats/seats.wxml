@@ -1,0 +1,181 @@
+<view class="page">
+  <view class="page-title">{{roomName}}</view>
+  <view class="page-subtitle">{{occupancyText || '请选择时段后查看座位占用'}}</view>
+
+  <!-- 实时座位状态不可用 / 演示数据：必须显式提示，否则「全绿 + 约不上」无从解释 -->
+  <view wx:if="{{demoNotice}}" class="demo-banner {{realtime ? '' : 'demo-banner--alert'}}">
+    <text class="demo-banner__icon">!</text>
+    <text class="demo-banner__text">{{demoNotice}}</text>
+  </view>
+
+  <!-- 违约禁约：进场就说明，避免点座位填完抽屉提交时才被拒 -->
+  <view wx:if="{{banNotice}}" class="demo-banner demo-banner--alert">
+    <text class="demo-banner__icon">!</text>
+    <text class="demo-banner__text">{{banNotice}}</text>
+  </view>
+
+  <!-- 高亮模式提示 -->
+  <view wx:if="{{highlightHint}}" class="highlight-banner">
+    <text class="highlight-banner__icon">✨</text>
+    <text class="highlight-banner__text">{{highlightHint}}</text>
+  </view>
+
+  <!-- 时段控制：时长即预约（仿网吧/图书馆选座系统） -->
+  <view class="booking-bar">
+    <view class="mode-row">
+      <view class="mode-chip {{startMode === 'now' ? 'mode-chip--active' : ''}}" data-mode="now" bind:tap="onStartModeChange">现在开始</view>
+      <view class="mode-chip {{startMode === 'later' ? 'mode-chip--active' : ''}}" data-mode="later" bind:tap="onStartModeChange">稍后开始</view>
+    </view>
+
+    <view wx:if="{{startMode === 'later'}}" class="time-row">
+      <text class="time-label">开始</text>
+      <picker mode="date" value="{{startDate}}" start="{{minDate}}" end="{{maxDate}}" bindchange="onStartDateChange">
+        <view class="time-value">{{startDate}}</view>
+      </picker>
+      <picker mode="time" value="{{startTime}}" bindchange="onStartTimeChange">
+        <view class="time-value">{{startTime}}</view>
+      </picker>
+    </view>
+    <view wx:else class="time-row">
+      <text class="time-label">开始</text>
+      <text class="time-value time-value--readonly">{{startDate}} {{startTime}}</text>
+    </view>
+
+    <view class="duration-row">
+      <text class="time-label">时长</text>
+      <view class="duration-chips">
+        <view
+          wx:for="{{durations}}"
+          wx:key="minutes"
+          class="duration-chip {{durationIndex === index ? 'duration-chip--active' : ''}}"
+          data-index="{{index}}"
+          bind:tap="onDurationTap"
+        >{{item.label}}</view>
+        <!-- 自定义档：点亮后点右侧「结束」时间自由选结束时刻 -->
+        <view
+          class="duration-chip {{durationIndex === -1 ? 'duration-chip--active' : ''}}"
+          bind:tap="onCustomDurationTap"
+        >自定义</view>
+      </view>
+    </view>
+
+    <!-- 结束时间可直接手动选：整块（时间 + 提示）都在 picker 内，点哪都能拉起选择器 -->
+    <view class="time-row">
+      <text class="time-label">结束</text>
+      <picker mode="time" value="{{endTime}}" bindchange="onEndTimeChange">
+        <view class="end-picker">
+          <view class="time-value">{{endTime}}</view>
+          <text class="time-hint">{{durationIndex === -1 ? '点此选结束时间 ›' : '可手动调整'}}</text>
+        </view>
+      </picker>
+    </view>
+
+    <view class="window-summary">时段：{{windowLabel}}</view>
+    <!-- 超出开放时段被自动截断/顺延时必须显式说明，否则用户会以为时长被偷偷改了 -->
+    <view wx:if="{{windowNote}}" class="window-note">⚠️ {{windowNote}}</view>
+  </view>
+
+  <!-- 特征筛选：标出靠窗 / 有电源 / 靠窗+电源 座位 -->
+  <view class="filter-row">
+    <text class="filter-label">筛选</text>
+    <view
+      wx:for="{{filterOptions}}"
+      wx:key="key"
+      class="filter-chip {{featureFilter === item.key ? 'filter-chip--active' : ''}}"
+      data-key="{{item.key}}"
+      bind:tap="onFilterTap"
+    >{{item.label}}</view>
+  </view>
+
+  <!-- 状态图例 -->
+  <view class="legend-row">
+    <view class="legend-item">
+      <view class="legend-dot legend-dot--free"></view>
+      <text>空闲</text>
+    </view>
+    <view class="legend-item">
+      <view class="legend-dot legend-dot--busy"></view>
+      <text>已约/使用中</text>
+    </view>
+    <view class="legend-item">
+      <view class="legend-dot legend-dot--mine"></view>
+      <text>我的预约</text>
+    </view>
+    <view class="legend-item">
+      <view class="legend-dot legend-dot--maintain"></view>
+      <text>维护</text>
+    </view>
+  </view>
+
+  <loading-state wx:if="{{loading}}" tip="加载座位…" />
+  <seat-map
+    wx:else
+    room-id="{{roomId}}"
+    seats="{{seats}}"
+    floor-plan="{{floorPlan}}"
+    realtime="{{realtime}}"
+    bind:seatselect="onSeatTap"
+  />
+  <empty-state
+    wx:if="{{!loading && !seats.length}}"
+    title="暂无可用座位"
+    description="该时段暂时没有可预约的座位，试试换个时段吧"
+    icon="💺"
+  />
+
+  <!-- 底部抽屉：选座确认。⚠️ 故意用原生 view 实现、不用 t-popup——
+       真机上 TDesign 构建产物异常（如 tslib 缺失）会导致弹层静默渲染失败，
+       表现就是「点座位毫无反应」。原生节点没有这个故障面。 -->
+  <view wx:if="{{detailVisible}}" class="drawer-mask" bind:tap="onCloseDetail"></view>
+  <view wx:if="{{detailVisible}}" class="drawer-panel">
+    <view class="seat-detail">
+      <view class="drawer-grabber"></view>
+
+      <!-- 头部：座位名 + 座位号 -->
+      <view class="seat-detail__head">
+        <view class="seat-detail__head-main">
+          <view class="seat-detail__title">{{detailName}}</view>
+          <view class="seat-detail__hint">座位号 {{detailSeatId}}</view>
+        </view>
+      </view>
+
+      <!-- 信息卡：时段 / 开放时间 -->
+      <view class="seat-detail__info">
+        <view class="info-row">
+          <text class="info-row__label">时段</text>
+          <text class="info-row__value">{{windowLabel}}</text>
+        </view>
+        <view class="info-row" wx:if="{{openTimeText}}">
+          <text class="info-row__label">开放</text>
+          <text class="info-row__value info-row__value--open">{{openTimeText}}</text>
+        </view>
+        <!-- 时段被截断/顺延过：下单前再强调一次，避免「没注意就约成了明天」 -->
+        <view class="seat-detail__clamp" wx:if="{{windowNote}}">{{windowNote}}</view>
+      </view>
+
+      <!-- 特征分段条：等分满宽（无独立胶囊描边） -->
+      <view class="feat-bar" wx:if="{{detailFeatures.length}}">
+        <text class="feat-bar__item" wx:for="{{detailFeatures}}" wx:key="*this">{{item}}</text>
+      </view>
+
+      <!-- 提示区：签到指引 + 评价引导（合并一张浅底卡，避免裸文字浮在卡片之间） -->
+      <view class="seat-detail__notices">
+        <view class="notice-row notice-row--checkin">
+          <text class="notice-row__text notice-row__text--main">预约成功后到「我的预约」签到<text class="notice-row__sub">（开始前 15 分钟可签）</text></text>
+        </view>
+        <view class="notice-row">
+          <block wx:if="{{detailReviewCount > 0}}">
+            <text class="notice-row__text notice-row__text--score">{{detailRating}}</text>
+            <text class="notice-row__text notice-row__text--sub">{{detailReviewCount}} 条评价</text>
+          </block>
+          <text wx:else class="notice-row__text notice-row__text--sub">暂无评价 · 用完后可评价，帮别人选座</text>
+        </view>
+      </view>
+
+      <view class="seat-detail__actions">
+        <button class="drawer-btn" bind:tap="onCloseDetail" disabled="{{submitting}}">取消</button>
+        <button class="drawer-btn drawer-btn--primary" loading="{{submitting}}" disabled="{{submitting}}" bind:tap="onConfirmBooking">立即预约</button>
+      </view>
+    </view>
+  </view>
+</view>

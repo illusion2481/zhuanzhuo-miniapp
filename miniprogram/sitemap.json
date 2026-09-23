@@ -1,0 +1,9 @@
+{
+  "desc": "专注座 sitemap",
+  "rules": [
+    {
+      "action": "allow",
+      "page": "*"
+    }
+  ]
+}

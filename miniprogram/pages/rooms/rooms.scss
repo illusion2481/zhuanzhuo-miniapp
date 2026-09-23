@@ -1,0 +1,308 @@
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+// ═══════════════ 自习室页配色（与首页青绿主题一致） ═══════════════
+$room-teal: #1DB5B5;
+$room-teal-light: #A8E6E6;
+$room-bg: #F0FAFA;
+
+// 补上首页用到的变量（本文件里也要用）
+$home-text-light: #7F8C8D;
+$home-border: #E8F4F4;
+
+/* ═══════════════ 房间列表页 ═══════════════ */
+
+.page {
+  min-height: 100vh;
+  background: $room-bg;
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
+  position: relative;
+}
+
+/* 背景图：固定铺在内容下方（小程序不支持 CSS 本地背景图，用 image 实现） */
+.page-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 0;
+  opacity: 0.9;
+}
+
+.page-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: $room-teal;
+  text-align: center;
+  padding: $spacing-lg $spacing-xl $spacing-sm;
+  position: relative;
+  z-index: 1;
+}
+
+.venue {
+  padding: $spacing-md;
+  position: relative;
+  z-index: 1;
+}
+
+.venue__title {
+  font-size: $font-size-sm;
+  color: $room-teal;
+  margin-bottom: $spacing-md;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* 【改】一列：一行一张长条卡片 */
+.venue__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $spacing-md;
+}
+
+/* ── 房间卡片：上图 + 下白底文字 ── */
+.box-room {
+  position: relative;
+  background: #fff;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 2rpx solid rgba(29, 181, 181, 0.2);
+  box-shadow: 0 8rpx 24rpx rgba(29, 181, 181, 0.1);
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+/* 图区：固定高度，图片裁切填充 */
+.box-room__cover {
+  position: relative;
+  width: 100%;
+  height: 300rpx;          /* 【改】240 → 300，长条卡片图更高更舒展 */
+  background: #E8F4F4;
+  flex-shrink: 0;
+}
+
+.box-room__bg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* 右上角空闲数胶囊（叠在图上） */
+.box-room__badge {
+  position: absolute;
+  top: 12rpx;
+  right: 12rpx;
+  background: rgba(29, 181, 181, 0.92);
+  color: #fff;
+  font-size: $font-size-xs;
+  font-weight: 600;
+  padding: 4rpx 14rpx;
+  border-radius: 24rpx;    /* 【改】999rpx → 24rpx，固定圆角更稳 */
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
+  line-height: 1.4;
+}
+
+/* 占用状态不可信时，徽标改为灰色「占用状态未知」，不再报一个虚假的空闲数 */
+.box-room__badge--unknown {
+  background: $color-muted-surface;
+}
+
+/* 文字区：白底 */
+.box-room__body {
+  flex: 1;
+  padding: $spacing-sm $spacing-md $spacing-md;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.box-room__name {
+  font-size: $font-size-md;
+  font-weight: 700;
+  color: $room-teal;
+  line-height: 1.3;
+}
+
+/* 小座位预览点：格数与徽标「空闲 x/y」同源（见 rooms.ts seatCounts） */
+.box-room__mini {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.mini-seat {
+  width: 18rpx;
+  height: 18rpx;
+  border-radius: 4rpx;
+  flex-shrink: 0;
+}
+
+/* 座位数超过渲染上限时的「+N」补位标记 */
+.mini-seat-more {
+  font-size: 20rpx;
+  line-height: 18rpx;
+  color: $home-text-light;
+  flex-shrink: 0;
+}
+
+.mini-seat--free     { background: #36B37E; }
+.mini-seat--reserved { background: #E5484D; }
+.mini-seat--in-use   { background: #E5484D; }
+.mini-seat--maintain { background: #9CA3AF; }
+
+/* 非实时占用数据：格子统一转灰，示意「状态未知」而不是「全部空闲」 */
+.box-room__mini--unknown .mini-seat {
+  background: $color-muted-soft;
+  border: 2rpx solid $color-muted-surface;
+}
+
+.box-room__foot {
+  margin-top: auto;
+  font-size: $font-size-2xs;
+  color: $home-text-light;
+  padding-top: 6rpx;
+  border-top: 1rpx solid $home-border;
+}
+/* 数据源提示（演示数据 / 实时状态不可用） */
+.demo-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+  margin: $spacing-sm $spacing-xl 0;
+  padding: $spacing-sm $spacing-md;
+  background: $color-warning-soft;
+  border: 2rpx solid $color-warning-border;
+  border-radius: $radius-md;
+}
+
+/* 座位实时状态不可用：升级为红色警示（此时「全绿」不可信，必须比普通提示更醒目） */
+.demo-banner--alert {
+  background: $color-danger-soft;
+  border-color: $color-danger-border;
+}
+
+.demo-banner__icon {
+  flex-shrink: 0;
+  width: 32rpx;
+  height: 32rpx;
+  line-height: 32rpx;
+  text-align: center;
+  border-radius: 50%;
+  background: $color-warning;
+  color: #FFFFFF;
+  font-size: $font-size-xs;
+  font-weight: 600;
+}
+
+.demo-banner--alert .demo-banner__icon {
+  background: $color-danger;
+}
+
+.demo-banner__text {
+  flex: 1;
+  font-size: $font-size-xs;
+  line-height: 1.6;
+  color: $color-warning-ink;
+}
+
+.demo-banner--alert .demo-banner__text {
+  color: $color-danger-ink;
+}
+
+/* ═══════════════ 搜索 / 筛选 / 排序条 ═══════════════ */
+.room-toolbar {
+  position: relative;
+  z-index: 1;
+  padding: 0 $spacing-xl;
+  margin-top: $spacing-sm;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.room-search {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  background: #fff;
+  border: 2rpx solid $home-border;
+  border-radius: $radius-lg;
+  padding: $spacing-sm $spacing-md;
+  box-shadow: 0 4rpx 12rpx rgba(29, 181, 181, 0.08);
+}
+
+.room-search__icon {
+  font-size: $font-size-sm;
+  flex-shrink: 0;
+}
+
+.room-search__input {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $room-teal;
+}
+
+.room-search__ph {
+  color: #B5C6C6;
+}
+
+.room-search__clear {
+  flex-shrink: 0;
+  width: 36rpx;
+  height: 36rpx;
+  line-height: 36rpx;
+  text-align: center;
+  border-radius: 50%;
+  background: $color-muted-soft;
+  color: $color-muted-ink;
+  font-size: $font-size-2xs;
+}
+
+.room-toolbar__chips {
+  width: 100%;
+}
+
+.room-chips {
+  display: flex;
+  gap: $spacing-sm;
+  width: 100%;
+}
+
+.room-chip {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 8rpx 0;
+  border-radius: 32rpx;
+  font-size: $font-size-xs;
+  color: $room-teal;
+  background: #fff;
+  border: 2rpx solid $home-border;
+  text-align: center;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.room-chip--active {
+  background: $room-teal;
+  border-color: $room-teal;
+  color: #fff;
+  font-weight: 600;
+}
+
+.room-chip--sort {
+  color: $home-text-light;
+
+  /* 选中态必须盖回白字：--sort 在 --active 之后声明，同级会覆盖 color:#fff */
+  &.room-chip--active {
+    color: #fff;
+  }
+}

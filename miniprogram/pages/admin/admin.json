@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "管理统计",
+  "usingComponents": {
+    "empty-state": "/components/EmptyState/EmptyState",
+    "loading-state": "/components/LoadingState/LoadingState"
+  }
+}

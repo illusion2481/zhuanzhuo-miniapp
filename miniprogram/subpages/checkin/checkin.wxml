@@ -1,0 +1,26 @@
+<view class="page">
+  <view class="checkin-card">
+    <view class="checkin-icon checkin-icon--{{state}}">
+      <text wx:if="{{state === 'success'}}">✓</text>
+      <text wx:elif="{{state === 'loading'}}">…</text>
+      <text wx:else>!</text>
+    </view>
+
+    <text class="checkin-title">{{title}}</text>
+
+    <text wx:if="{{seatLabel}}" class="checkin-seat">{{seatLabel}}</text>
+    <text class="checkin-msg">{{message}}</text>
+
+    <!-- 失败态才出现的自助入口：问题发生在哪，帮助就在哪 -->
+    <view wx:if="{{state !== 'success' && state !== 'loading'}}" class="checkin-help" bind:tap="goFaq">
+      <text>签不上？查看常见原因与解决办法</text>
+      <text class="checkin-help__arrow">›</text>
+    </view>
+
+    <view class="checkin-actions">
+      <button wx:if="{{canRetry}}" class="btn btn--medium btn--primary" bind:tap="onRetry">重新签到</button>
+      <button class="btn btn--medium {{canRetry ? 'btn--ghost' : 'btn--primary'}}" bind:tap="goMyReservations">查看我的预约</button>
+      <button class="btn btn--medium btn--ghost" bind:tap="goHome">返回首页</button>
+    </view>
+  </view>
+</view>

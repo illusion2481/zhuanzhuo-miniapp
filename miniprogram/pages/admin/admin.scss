@@ -1,0 +1,2272 @@
+@import '../../styles/variables.scss';
+
+.page {
+  /* 左右留白加大：卡片不再贴屏幕边缘（2026-09-16 用户反馈间距太近） */
+  padding: $spacing-lg $spacing-lg;
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
+  background: $color-bg-page;
+  min-height: 100vh;
+}
+
+.page-subtitle {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  margin-top: $spacing-xs;
+  margin-bottom: $spacing-lg;
+}
+
+.stat-card,
+.rate-card,
+.status-card {
+  background: $color-surface;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-soft;
+}
+
+.stat-grid {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  flex: 1;
+  min-width: 120rpx;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: $font-size-xl;
+  font-weight: 700;
+  color: $color-primary;
+}
+
+.stat-label {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-top: $spacing-xs;
+}
+
+.card-title {
+  font-size: $font-size-lg;
+  font-weight: 600;
+  color: $color-text;
+  margin-bottom: $spacing-md;
+}
+
+.rate-row {
+  display: flex;
+  justify-content: space-between;
+  padding: $spacing-sm 0;
+  border-bottom: 1rpx solid $color-border;
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.rate-name {
+  color: $color-text-secondary;
+  font-size: $font-size-md;
+}
+
+.rate-value {
+  color: $color-primary;
+  font-weight: 600;
+  font-size: $font-size-md;
+}
+
+.status-bar {
+  display: flex;
+  height: 24rpx;
+  border-radius: $radius-sm;
+  overflow: hidden;
+  background: $color-border;
+}
+
+.status-seg {
+  height: 100%;
+}
+
+.status-pending_checkin {
+  background: $color-warning;
+}
+.status-active {
+  background: $color-primary;
+}
+.status-paused {
+  background: $color-accent;
+}
+.status-completed {
+  background: $color-success;
+}
+.status-cancelled {
+  background: $color-text-secondary;
+}
+.status-no_show {
+  background: $color-danger;
+}
+
+.status-legend {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: $spacing-md;
+  gap: $spacing-md;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+}
+
+.legend-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  margin-right: $spacing-xs;
+}
+
+.legend-name {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.legend-count {
+  font-size: $font-size-sm;
+  color: $color-text;
+  margin-left: $spacing-xs;
+  font-weight: 600;
+}
+
+.refresh-btn {
+  margin-top: $spacing-xs;
+  color: $color-primary;
+
+  &[disabled] {
+    opacity: 0.5;
+    color: $color-primary;
+  }
+}
+
+/* 未授权态 */
+.unauthorized {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 200rpx $spacing-lg $spacing-lg;
+  text-align: center;
+}
+
+.unauthorized-icon {
+  width: 120rpx;
+  height: 120rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $color-surface;
+  border-radius: 50%;
+  margin-bottom: $spacing-lg;
+  box-shadow: $shadow-soft;
+}
+
+.lock-shape {
+  position: relative;
+  width: 56rpx;
+  height: 56rpx;
+}
+
+.lock-shackle {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36rpx;
+  height: 36rpx;
+  border: 6rpx solid $color-primary;
+  border-bottom: none;
+  border-radius: 18rpx 18rpx 0 0;
+  box-sizing: border-box;
+}
+
+.lock-body {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48rpx;
+  height: 36rpx;
+  background: $color-primary;
+  border-radius: $radius-sm;
+}
+
+.unauthorized-title {
+  font-size: $font-size-lg;
+  font-weight: 600;
+  color: $color-text;
+  margin-bottom: $spacing-sm;
+}
+
+.unauthorized-desc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.6;
+  margin-bottom: $spacing-lg;
+  max-width: 560rpx;
+}
+
+.unauthorized-btn {
+  min-width: 240rpx;
+  background: #1DB5B5 !important;
+  color: #ffffff !important;
+  border-radius: $radius-md;
+  font-size: $font-size-md;
+  padding: 16rpx 32rpx;
+}
+
+/* —— 数据初始化工具 —— */
+.tool-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-md;
+  padding: $spacing-md $spacing-lg;
+  background: $color-surface;
+  border: 1rpx solid $color-border;
+  border-radius: $radius-md;
+  box-shadow: $shadow-soft;
+  margin-bottom: $spacing-sm;
+}
+
+.tool-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.tool-title {
+  display: block;
+  font-size: $font-size-md;
+  font-weight: 600;
+  color: $color-text;
+  margin-bottom: 6rpx;
+}
+
+.tool-desc {
+  display: block;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: 1.5;
+}
+
+.tool-btn {
+  flex-shrink: 0;
+  background: #1DB5B5 !important;
+  color: #ffffff !important;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  padding: 12rpx 24rpx;
+
+  &[disabled] {
+    opacity: 0.6;
+    color: #ffffff !important;
+  }
+}
+
+.tool-result {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  margin-bottom: $spacing-md;
+}
+
+/* —— 诊断卡 —— */
+.diag-card {
+  background: $color-surface;
+  border: 1rpx dashed $color-border;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.diag-card--error {
+  border-style: solid;
+  border-color: $color-danger;
+  background: rgba(229, 72, 77, 0.06);
+}
+
+.diag-title {
+  display: block;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: $color-text;
+  margin-bottom: 6rpx;
+}
+
+.diag-text {
+  display: block;
+  font-size: $font-size-xs;
+  line-height: 1.6;
+  color: $color-text-secondary;
+  word-break: break-all;
+}
+
+/* —— 座位维护 —— */
+.seat-card {
+  background: $color-surface;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-soft;
+}
+
+.seat-desc {
+  display: block;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: 1.6;
+  margin-bottom: $spacing-md;
+}
+
+.seat-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.seat-tab {
+  padding: 8rpx 20rpx;
+  border-radius: 999rpx;
+  background: #f2f5f5;
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+}
+
+.seat-tab--on {
+  background: $color-primary;
+  color: #ffffff;
+}
+
+.seat-summary {
+  font-size: $font-size-sm;
+  color: $color-text;
+  margin-bottom: $spacing-md;
+}
+
+.seat-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.seat-chip {
+  min-width: 112rpx;
+  padding: 14rpx 8rpx;
+  border-radius: $radius-sm;
+  text-align: center;
+  font-size: $font-size-xs;
+  font-weight: 600;
+  color: #ffffff;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.seat-chip--free {
+  background: #36b37e;
+}
+
+.seat-chip--reserved {
+  background: #e5484d;
+  opacity: 0.55;
+}
+
+.seat-chip--maintain {
+  background: #9ca3af;
+}
+
+.seat-msg {
+  margin-top: $spacing-md;
+  font-size: $font-size-sm;
+  color: $color-primary;
+}
+
+.seat-msg--error {
+  color: $color-danger;
+}
+
+.seat-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-lg;
+  margin-top: $spacing-md;
+}
+
+.seat-legend__item {
+  display: flex;
+  align-items: center;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.seat-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  margin-right: $spacing-xs;
+}
+
+.seat-dot--free {
+  background: #36b37e;
+}
+
+.seat-dot--reserved {
+  background: #e5484d;
+}
+
+.seat-dot--maintain {
+  background: #9ca3af;
+}
+/* ═══════════════════════════════════════════════
+   商家后台：Tab 与运营模块
+   ═══════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════
+   商家后台：数据大屏头部（实时时钟 + 今日签到码）
+   深色大屏风格：深青渐变底 + 白字 + 微光氛围，所有 tab 常驻顶部
+   ═══════════════════════════════════════════════ */
+.dash-hero {
+  display: flex;
+  align-items: stretch;
+  margin: $spacing-lg $spacing-xl 0;
+  padding: $spacing-lg $spacing-lg;
+  border-radius: $radius-lg;
+  background:
+    radial-gradient(120% 160% at 88% -20%, rgba(94, 234, 212, 0.28), transparent 55%),
+    radial-gradient(100% 140% at 0% 110%, rgba(13, 148, 136, 0.35), transparent 60%),
+    linear-gradient(135deg, #0f3d3d, #0b2b2e 60%, #0d3838);
+  box-shadow: 0 10rpx 30rpx rgba(11, 43, 46, 0.35);
+  color: #fff;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 右上角装饰性刻度点，增加「大屏」氛围 */
+.dash-hero::after {
+  content: '';
+  position: absolute;
+  right: 24rpx;
+  top: 24rpx;
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  background: #5eead4;
+  box-shadow: 0 0 12rpx rgba(94, 234, 212, 0.9);
+  animation: dash-pulse 2s ease-in-out infinite;
+}
+
+@keyframes dash-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.dash-hero__clock {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.dash-hero__date {
+  font-size: $font-size-xs;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.dash-hero__time {
+  font-size: 56rpx;
+  line-height: 1.15;
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 2rpx;
+  text-shadow: 0 0 24rpx rgba(94, 234, 212, 0.45);
+}
+
+.ci-sec-title--lg {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: $color-text;
+}
+
+/* 房间选择卡里的提示语 */
+.ci-picker-hint {
+  margin-top: 12rpx;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  text-align: center;
+}
+
+.dash-hero__divider {
+  width: 2rpx;
+  margin: 8rpx $spacing-lg;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+  flex-shrink: 0;
+}
+
+.dash-hero__code {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8rpx;
+  text-align: right;
+}
+
+.dash-hero__code-label {
+  max-width: 100%;
+  font-size: $font-size-xs;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.72);
+  /* 房间名必须完整展示：允许换行，不做省略号截断 */
+  white-space: normal;
+  word-break: break-all;
+}
+
+.dash-hero__code-num {
+  font-size: 64rpx;
+  line-height: 1.1;
+  font-weight: 700;
+  color: #5eead4;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 6rpx;
+  text-shadow: 0 0 28rpx rgba(94, 234, 212, 0.55);
+}
+
+.dash-hero__code-mode {
+  padding: 4rpx 18rpx;
+  border-radius: 999rpx;
+  font-size: $font-size-xs;
+  color: #5eead4;
+  background: rgba(94, 234, 212, 0.14);
+  border: 2rpx solid rgba(94, 234, 212, 0.4);
+
+  &--fixed {
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.12);
+    border-color: rgba(251, 191, 36, 0.4);
+  }
+}
+
+.admin-tabs {
+  display: flex;
+  gap: $spacing-sm;
+  margin: $spacing-lg $spacing-xl 0;
+}
+
+.admin-tab {
+  flex: 1;
+  text-align: center;
+  padding: $spacing-sm 0;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  background: $color-surface;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-md;
+}
+
+.admin-tab--on {
+  color: $color-surface;
+  background: $color-primary;
+  border-color: $color-primary;
+  font-weight: 500;
+}
+
+/* 待处理工单角标：不用切进「反馈」Tab 也知道有几条等着回 */
+.admin-tab__badge {
+  display: inline-block;
+  margin-left: 6rpx;
+  min-width: 28rpx;
+  padding: 0 8rpx;
+  font-size: 20rpx;
+  line-height: 28rpx;
+  text-align: center;
+  color: $color-surface;
+  background: $color-warning;
+  border-radius: 14rpx;
+  vertical-align: middle;
+}
+
+/* 有工单超 24 小时未响应：转成警示色，催着处理 */
+.admin-tab__badge--warn {
+  background: $color-danger;
+}
+
+.ops-card {
+  margin: $spacing-lg $spacing-xl;
+  padding: $spacing-lg;
+  background: $color-surface;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-soft;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+/* 筛选/操作按钮等分铺满一行（与卡片同宽、文字居中） */
+.filter-row--grid {
+  flex-wrap: nowrap;
+  gap: $spacing-xs;
+}
+
+.filter-row--grid .filter-chip,
+.filter-row--grid .mini-btn,
+.filter-row--grid picker {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.filter-row--grid .filter-chip {
+  padding: 8rpx 0;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.filter-row--grid picker .filter-chip {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.filter-chip {
+  padding: 8rpx $spacing-md;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  background: $color-bg;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-sm;
+}
+
+.filter-chip--on {
+  color: $color-surface;
+  background: $color-primary;
+  border-color: $color-primary;
+}
+
+/* 分段选择器（反馈筛选：全部 / 待处理 / 已处理） */
+.seg {
+  display: inline-flex;
+  background: $color-bg;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-sm;
+  overflow: hidden;
+}
+
+.seg__item {
+  padding: 10rpx $spacing-lg;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  border-right: 2rpx solid $color-border;
+}
+
+.seg__item:last-child {
+  border-right: none;
+}
+
+.seg__item--on {
+  color: $color-surface;
+  background: $color-primary;
+}
+
+/* 反馈卡片 */
+.fb-card {
+  padding: $spacing-md;
+  background: $color-bg;
+  border-radius: $radius-md;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.fb-card__head {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.fb-tag {
+  font-size: $font-size-xs;
+  padding: 2rpx 14rpx;
+  border-radius: $radius-xs;
+  flex-shrink: 0;
+}
+
+.fb-tag--pending {
+  color: $color-warning;
+  background: rgba(245, 166, 35, 0.14);
+}
+
+/* 已回复：中间态，用主色区别于「已关闭」的绿色 */
+.fb-tag--replied {
+  color: $color-primary;
+  background: rgba(29, 181, 181, 0.14);
+}
+
+.fb-tag--handled {
+  color: $color-success;
+  background: rgba(29, 181, 132, 0.14);
+}
+
+.fb-cat {
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.fb-time {
+  margin-left: auto;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+/* 工单主体信息：谁提的 + 等了多久（超过 SLA 标红） */
+.fb-meta {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-top: $spacing-xs;
+  font-size: $font-size-xs;
+}
+
+.fb-meta__user {
+  color: $color-text-secondary;
+}
+
+.fb-meta__wait {
+  margin-left: auto;
+  color: $color-text-faint;
+}
+
+.fb-meta__wait--overdue {
+  color: $color-danger-ink;
+  font-weight: 600;
+}
+
+.fb-content {
+  font-size: $font-size-sm;
+  color: $color-text;
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+.fb-imgs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+}
+
+.fb-img {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: $radius-sm;
+  background: $color-bg-page;
+}
+
+/* 用户追问：橙底 + 左侧竖线，一眼看出「这条还没解决」 */
+.fb-followups {
+  margin-top: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-sm;
+  background: rgba(245, 166, 35, 0.1);
+  border-left: 6rpx solid $color-warning;
+}
+
+.fb-followups__tag {
+  font-size: $font-size-xs;
+  font-weight: 600;
+  color: $color-warning;
+}
+
+.fb-followups__item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: $spacing-sm;
+  margin-top: 6rpx;
+}
+
+.fb-followups__text {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text;
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+.fb-followups__time {
+  flex-shrink: 0;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+/* 后台回复留痕：浅青底卡片，与用户正文区分 */
+.fb-reply {
+  margin-top: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-sm;
+  background: rgba(29, 181, 181, 0.08);
+  border-left: 6rpx solid $color-primary;
+}
+
+.fb-reply__head {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.fb-reply__tag {
+  font-size: $font-size-xs;
+  font-weight: 600;
+  color: $color-primary;
+}
+
+.fb-reply__time {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.fb-reply__text {
+  margin-top: 4rpx;
+  font-size: $font-size-sm;
+  color: $color-text;
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+.fb-actions {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  margin-top: $spacing-sm;
+}
+
+.fb-actions__row {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-sm;
+}
+
+.fb-reply-input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 120rpx;
+  padding: $spacing-sm $spacing-md;
+  font-size: $font-size-sm;
+  color: $color-text;
+  background: $color-bg-page;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-sm;
+}
+
+.mini-btn {
+  font-size: $font-size-xs;
+  line-height: 1.8;
+  color: $color-primary;
+  background: $color-surface;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-sm;
+  padding: 0 $spacing-md;
+}
+
+.mini-btn--danger {
+  color: $color-danger;
+  border-color: $color-danger;
+}
+
+.mini-btn--primary {
+  color: #ffffff;
+  background: $color-primary;
+  border-color: $color-primary;
+}
+
+.resv-item {
+  padding: $spacing-md;
+  background: $color-bg;
+  border-radius: $radius-md;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+/* ═══ 用户与信用：每用户一张独立白卡 ═══ */
+.user-card {
+  padding: $spacing-md;
+  background: $color-surface;
+  border-radius: $radius-md;
+  box-shadow: $shadow-soft;
+  margin-bottom: $spacing-md;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.user-card__head {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.user-card__avatar {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: rgba(29, 181, 181, 0.12);
+  color: $color-primary;
+  font-size: $font-size-md;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.user-card__meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.user-card__name {
+  font-size: $font-size-md;
+  color: $color-text;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-card__sub {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+/* 状态徽章：小号胶囊（浅色底 + 彩字），替换原先生硬的实色方块 */
+.user-badge {
+  flex-shrink: 0;
+  font-size: $font-size-2xs;
+  line-height: 1;
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  font-weight: 500;
+}
+
+.user-badge--ok {
+  color: $color-success;
+  background: rgba(22, 163, 122, 0.12);
+}
+
+/* ── 预约卡片：与用户卡片同款外观（2026-09-19 从 .resv-item 平铺行改来）── */
+.resv-card {
+  padding: $spacing-md;
+  background: $color-surface;
+  border-radius: $radius-md;
+  box-shadow: $shadow-soft;
+  margin-bottom: $spacing-md;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.resv-card__head {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.resv-card__avatar {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: rgba(29, 181, 181, 0.12);
+  color: $color-primary;
+  font-size: $font-size-md;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.resv-card__meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.resv-card__name {
+  font-size: $font-size-md;
+  color: $color-text;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resv-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.resv-card__sub {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.resv-card__ops {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.resv-card__actions {
+  display: flex;
+  gap: $spacing-xs;
+}
+
+.resv-card__actions .mini-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0 0;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* 破坏性操作单独一行，用浅底警示色与常规操作区分 */
+.resv-card__actions--danger {
+  padding-top: $spacing-xs;
+  border-top: 2rpx dashed $color-border;
+}
+
+.mini-btn--warn {
+  color: #8A5A00;
+  background: rgba(240, 173, 78, 0.16);
+  border: 2rpx solid rgba(240, 173, 78, 0.4);
+}
+
+.user-badge--banned {
+  color: $color-danger;
+  background: rgba(229, 72, 77, 0.12);
+}
+
+/* 操作按钮组：一行三等分，统一高度与圆角，主次靠颜色区分 */
+.user-card__actions {
+  display: flex;
+  gap: $spacing-xs;
+}
+
+.user-card__btn {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8rpx;
+  text-align: center;
+  white-space: nowrap;
+  font-size: $font-size-2xs;
+  line-height: 2.2;
+  border-radius: $radius-sm;
+}
+
+.resv-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.resv-seat {
+  font-size: $font-size-md;
+  color: $color-text;
+  font-weight: 500;
+}
+
+.resv-status {
+  font-size: $font-size-xs;
+  padding: 4rpx 12rpx;
+  border-radius: $radius-sm;
+  color: $color-surface;
+  background: $color-text-secondary;
+}
+
+.resv-status--pending_checkin {
+  background: $color-warning;
+}
+
+.resv-status--active {
+  background: $color-seat-in-use;
+}
+
+.resv-status--paused {
+  background: $color-accent;
+}
+
+.resv-status--completed {
+  background: $color-success;
+}
+
+.resv-status--cancelled {
+  background: $color-text-secondary;
+}
+
+.resv-status--no_show {
+  background: $color-danger;
+}
+
+.resv-sub {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.resv-actions {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-xs;
+
+  .mini-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0 0;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 2.2;
+  }
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.form-label {
+  width: 140rpx;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+/* 表单项下方的浅色说明（告诉用户标签可点、不选的结果），与 seat-desc 区分开：
+   seat-desc 是整块功能区的说明，form-hint 是单个字段的说明。 */
+.form-hint {
+  margin-top: $spacing-sm;
+  font-size: $font-size-xs;
+  line-height: 1.6;
+  color: $color-text-secondary;
+}
+
+.form-hint__n {
+  font-weight: 600;
+  color: $color-primary;
+}
+
+.divider-line {
+  height: 2rpx;
+  margin: $spacing-lg 0;
+  background: $color-border;
+}
+
+.ops-input {
+  flex: 1;
+  height: $control-height-sm;
+  padding: 0 $spacing-md;
+  font-size: $font-size-sm;
+  color: $color-text;
+  background: $color-bg;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-sm;
+  box-sizing: border-box;
+}
+
+.room-row {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.room-name {
+  flex-shrink: 0;
+  width: 200rpx;
+  font-size: $font-size-sm;
+  color: $color-text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.room-bar {
+  flex: 1;
+  height: 16rpx;
+  background: $color-bg;
+  border-radius: $radius-sm;
+  overflow: hidden;
+}
+
+.room-bar__fill {
+  height: 100%;
+  background: $color-primary;
+}
+
+.room-num {
+  width: 90rpx;
+  text-align: right;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+/* ═══ 座位属性标签（批量新增时勾选） ═══ */
+.feature-tags {
+  display: flex;
+  gap: $spacing-sm;
+  flex: 1;
+  min-width: 0;
+}
+
+.feature-tag {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+  padding: 10rpx 0;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  background: $color-bg;
+  border: 2rpx solid $color-border;
+
+  &--on {
+    color: #ffffff;
+    background: $color-primary;
+    border-color: $color-primary;
+  }
+}
+
+/* ═══ 座位格内属性小标 ═══ */
+.seat-chip__label {
+  display: block;
+  font-size: $font-size-sm;
+}
+
+.seat-chip__tags {
+  display: flex;
+  gap: 4rpx;
+  justify-content: center;
+  margin-top: 4rpx;
+}
+
+.seat-tag {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+
+  &--window { background: #87CEEB; }   /* 天蓝 = 靠窗 */
+  &--power { background: #FFD700; }    /* 金黄 = 有插座 */
+}
+
+/* ══════════════ 到店签到码 ══════════════ */
+
+.ci-hint {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: 1.6;
+  margin-bottom: $spacing-md;
+}
+
+/* 门店行：状态点 + 名称/概要 + 标签 */
+.ci-row {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md;
+  background: $color-bg;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-xs;
+}
+
+.ci-row-dot {
+  flex-shrink: 0;
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: $color-border;
+
+  &--on {
+    background: $color-primary;
+    box-shadow: 0 0 0 6rpx rgba(29, 193, 193, 0.15);
+  }
+}
+
+.ci-row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.ci-room {
+  font-size: $font-size-sm;
+  color: $color-text;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ci-tag {
+  flex-shrink: 0;
+  font-size: $font-size-2xs;
+  color: $color-text-secondary;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-sm;
+  padding: 0 $spacing-xs;
+  line-height: 1.7;
+}
+
+.ci-tag--fixed {
+  color: $color-primary;
+  border-color: $color-primary;
+}
+
+.ci-row-meta {
+  font-size: $font-size-2xs;
+  color: $color-text-secondary;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ci-form {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 2rpx solid $color-border;
+}
+
+/* 房间选择按钮组：点击即切换，选中项高亮 */
+.ci-room-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: $spacing-sm;
+}
+
+.ci-room-btn {
+  flex: 1 1 auto;
+  min-width: 200rpx;
+  max-width: 100%;
+  padding: 18rpx 28rpx;
+  font-size: $font-size-sm;
+  color: $color-text;
+  text-align: center;
+  background: $color-bg;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-sm;
+  box-sizing: border-box;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.ci-room-btn--active {
+  color: #ffffff;
+  background: $color-primary;
+  border-color: $color-primary;
+  font-weight: 600;
+}
+
+.ci-input {
+  width: 100%;
+}
+
+/* 「签到方式」卡内的分区：① 位置签到 ② 到店签到码 ③ 各店一览 */
+.ci-block {
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 2rpx solid $color-border;
+}
+
+.ci-block__title {
+  font-size: $font-size-sm;
+  font-weight: 500;
+  color: $color-text;
+  margin-bottom: $spacing-xs;
+}
+
+/* 当前签到码：大号可视化卡片 */
+.ci-code-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+  padding: $spacing-md;
+  margin-bottom: $spacing-sm;
+  border-radius: $radius-sm;
+  background: linear-gradient(135deg, #1DC1C1, #0E9F9F);
+}
+
+.ci-code-card__main {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  min-width: 0;
+}
+
+.ci-code-card__label {
+  font-size: $font-size-xs;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.ci-code-card__num {
+  font-size: 56rpx;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #fff;
+  letter-spacing: 10rpx;
+}
+
+.ci-code-card__tag {
+  flex-shrink: 0;
+  font-size: $font-size-xs;
+  color: #0E9F9F;
+  background: #fff;
+  border-radius: 999rpx;
+  padding: 6rpx 20rpx;
+}
+
+.ci-code-card__tag--fixed {
+  color: #8A5A00;
+  background: rgba(240, 173, 78, 0.35);
+}
+
+/* 分区头：编号 + 标题 + 右侧状态 pill */
+.ci-sec-head {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-sm;
+}
+
+.ci-sec-bar {
+  width: 8rpx;
+  height: 28rpx;
+  border-radius: 4rpx;
+  background: $color-primary;
+  flex-shrink: 0;
+}
+
+.ci-sec-title {
+  flex: 1;
+  font-size: $font-size-sm;
+  font-weight: 500;
+  color: $color-text;
+}
+
+.ci-sec-pill {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: $font-size-2xs;
+  color: $color-text-secondary;
+  border: 2rpx solid $color-border;
+  border-radius: 999rpx;
+  padding: 2rpx 16rpx;
+
+  &__dot {
+    width: 12rpx;
+    height: 12rpx;
+    border-radius: 50%;
+    background: $color-border;
+  }
+
+  &--on {
+    color: $color-primary;
+    border-color: rgba(29, 193, 193, 0.4);
+    background: rgba(29, 193, 193, 0.08);
+
+    .ci-sec-pill__dot {
+      background: $color-primary;
+    }
+  }
+
+  &--warn {
+    color: #8A5A00;
+    border-color: rgba(240, 173, 78, 0.5);
+    background: rgba(240, 173, 78, 0.12);
+
+    .ci-sec-pill__dot {
+      background: #F0AD4E;
+    }
+  }
+}
+
+/* 位置签到：可视化选点卡（未选点=虚线空态 / 已选点=青绿浅底） */
+.geo-card {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md;
+  margin-bottom: $spacing-sm;
+  border: 2rpx dashed $color-border;
+  border-radius: $radius-md;
+  background: $color-bg;
+
+  &--on {
+    border-style: solid;
+    border-color: rgba(29, 193, 193, 0.35);
+    background: rgba(29, 193, 193, 0.06);
+  }
+}
+
+/* CSS 地图定位针（水滴形 + 白色圆心） */
+.geo-card__pin {
+  flex-shrink: 0;
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: $color-primary;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 16rpx;
+    height: 16rpx;
+    margin: -8rpx 0 0 -8rpx;
+    border-radius: 50%;
+    background: #fff;
+  }
+}
+
+.geo-card__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.geo-card__addr {
+  font-size: $font-size-sm;
+  color: $color-text;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.geo-card__meta {
+  font-size: $font-size-2xs;
+  color: $color-text-secondary;
+}
+
+.geo-card__radius {
+  flex-shrink: 0;
+  font-size: $font-size-xs;
+  font-weight: 600;
+  color: $color-primary;
+  background: rgba(29, 193, 193, 0.12);
+  border-radius: 999rpx;
+  padding: 4rpx 16rpx;
+}
+
+.geo-card__chevron {
+  flex-shrink: 0;
+  font-size: $font-size-lg;
+  color: $color-text-secondary;
+}
+
+/* 输入框 + 按钮同行（② 自定义固定码） */
+.ci-inline-row {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+
+  .ops-input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .mini-btn {
+    flex-shrink: 0;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   数据看板可视化（KPI 卡 / 环形图 / 柱状图 / 排行条 / 进度条）
+   ═══════════════════════════════════════════════════════ */
+
+/* —— ① 核心 KPI 四宫格 —— */
+.kpi-grid {
+  display: flex;
+  flex-wrap: wrap;
+  /* 留白加大：卡与卡之间用 xxl(64rpx)。
+     2026-09-17 补 margin-top：真正的问题不是卡与卡近，而是**标签栏与卡片区贴住了** ——
+     .admin-tabs 的下边距是 0、本元素又没有上边距 → 两者间距为 0。
+     其他 tab 首元素 .ops-card 自带 margin-top($spacing-lg)，所以只有「看板」tab 会贴。
+     这里用 xl(48rpx) 比其它 tab 更透气（用户选的方案 B）。
+     ⚠️ gap 与下面 .kpi-card 的 width calc 必须用同一个 token，否则两列排不下会换行错位。 */
+  gap: $spacing-xxl;
+  margin-top: $spacing-xl;
+  margin-bottom: $spacing-xxl;
+}
+
+.kpi-card {
+  width: calc((100% - #{$spacing-xxl}) / 2);
+  box-sizing: border-box;
+  /* 卡片内边距让数字/标签不贴边，视觉更平衡 */
+  padding: $spacing-xl $spacing-lg;
+  border-radius: $radius-lg;
+  color: $color-surface;
+  box-shadow: $shadow-soft;
+}
+
+.kpi-card--primary {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0) 62%), $color-primary;
+}
+.kpi-card--success {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0) 62%), $color-success;
+}
+.kpi-card--danger {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0) 62%), $color-danger;
+}
+.kpi-card--accent {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0) 62%), $color-accent;
+}
+
+.kpi-val {
+  font-size: $font-size-hero;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.kpi-unit {
+  font-size: $font-size-md;
+  font-weight: 600;
+  margin-left: 4rpx;
+}
+
+.kpi-label {
+  margin-top: $spacing-xs;
+  font-size: $font-size-sm;
+  opacity: 0.9;
+}
+
+/* —— 通用可视化卡片 —— */
+.viz-card {
+  background: $color-surface;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-soft;
+}
+
+.viz-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.viz-title {
+  font-size: $font-size-lg;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.viz-sub {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.viz-empty {
+  padding: $spacing-lg 0;
+  text-align: center;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+/* —— ② 状态分布：环形图 + 图例 —— */
+.donut-wrap {
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+}
+
+.donut {
+  position: relative;
+  flex-shrink: 0;
+  width: 240rpx;
+  height: 240rpx;
+  border-radius: 50%;
+  box-shadow: $shadow-soft;
+}
+
+.donut--empty {
+  background-image: conic-gradient($color-border 0% 100%);
+}
+
+.donut-hole {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  width: 152rpx;
+  height: 152rpx;
+  border-radius: 50%;
+  background: $color-surface;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.donut-num {
+  font-size: $font-size-xl;
+  font-weight: 700;
+  color: $color-text;
+  line-height: 1.1;
+}
+
+.donut-cap {
+  font-size: $font-size-2xs;
+  color: $color-text-secondary;
+  margin-top: 2rpx;
+}
+
+.donut-legend {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.lg-item {
+  display: flex;
+  align-items: center;
+}
+
+.lg-dot {
+  flex-shrink: 0;
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  margin-right: $spacing-xs;
+}
+
+.lg-name {
+  flex: 1;
+  min-width: 0;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lg-val {
+  width: 64rpx;
+  text-align: right;
+  font-size: $font-size-xs;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.lg-pct {
+  width: 76rpx;
+  text-align: right;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+/* —— ③ 近 7 日趋势：柱状图 —— */
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: $spacing-xs;
+  height: 300rpx;
+}
+
+.bar-col {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bar-val {
+  flex-shrink: 0;
+  font-size: $font-size-2xs;
+  color: $color-text-secondary;
+  margin-bottom: 6rpx;
+}
+
+.bar-track {
+  flex: 1;
+  width: 60%;
+  background: $color-border;
+  border-radius: $radius-sm;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.bar-fill {
+  width: 100%;
+  background: linear-gradient(180deg, $color-primary, $color-accent);
+  border-radius: $radius-sm;
+}
+
+.bar-label {
+  flex-shrink: 0;
+  margin-top: 6rpx;
+  font-size: $font-size-2xs;
+  color: $color-text-secondary;
+}
+
+/* —— ④ 高峰时段：排行横条 —— */
+.rank-row {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-sm;
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.rank-no {
+  flex-shrink: 0;
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  background: $color-border;
+  color: $color-text-secondary;
+  font-size: $font-size-2xs;
+  text-align: center;
+  line-height: 36rpx;
+}
+
+.rank-no--top {
+  background: $color-warning;
+  color: $color-surface;
+  font-weight: 600;
+}
+
+.rank-time {
+  flex-shrink: 0;
+  width: 100rpx;
+  font-size: $font-size-sm;
+  color: $color-text;
+}
+
+.rank-track {
+  flex: 1;
+  min-width: 0;
+  height: 26rpx;
+  background: $color-border;
+  border-radius: $radius-sm;
+  overflow: hidden;
+}
+
+.rank-fill {
+  height: 100%;
+  background: linear-gradient(90deg, $color-primary, $color-accent);
+  border-radius: $radius-sm;
+}
+
+.rank-count {
+  flex-shrink: 0;
+  width: 90rpx;
+  text-align: right;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+/* —— ⑤ 实时占用 —— */
+.usage-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-xs 0 $spacing-sm;
+}
+
+.usage-hero__n {
+  font-size: $size-stat-hero;
+  font-weight: 700;
+  color: $color-primary;
+  line-height: 1.05;
+}
+
+.usage-hero__u {
+  font-size: $font-size-lg;
+  font-weight: 600;
+  margin-left: 4rpx;
+}
+
+.usage-hero__txt {
+  margin-top: $spacing-xs;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.usage-hero__bar {
+  width: 100%;
+  height: 20rpx;
+  margin-top: $spacing-md;
+  background: $color-border;
+  border-radius: $radius-md;
+  overflow: hidden;
+}
+
+.usage-hero__fill {
+  height: 100%;
+  background: linear-gradient(90deg, $color-primary, $color-accent);
+  border-radius: $radius-md;
+}
+
+.usage-chips {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+}
+
+.u-chip {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6rpx;
+  padding: $spacing-xs 0;
+  background: $color-bg;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-md;
+}
+
+.u-dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+}
+.u-dot--used {
+  background: $color-seat-in-use;
+}
+.u-dot--free {
+  background: $color-seat-free;
+}
+.u-dot--maintain {
+  background: $color-seat-maintain;
+}
+
+.u-chip__l {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.u-chip__v {
+  font-size: $font-size-sm;
+  font-weight: 700;
+  color: $color-text;
+}
+
+.room-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  margin-top: $spacing-lg;
+}
+
+.room-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.room-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: $spacing-sm;
+}
+
+.room-name {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  font-size: $font-size-sm;
+  color: $color-text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.room-num {
+  flex: 0 0 auto;
+  width: auto;
+  text-align: right;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.room-bar {
+  flex: none;
+  width: 100%;
+  height: 18rpx;
+  background: $color-border;
+  border-radius: $radius-md;
+  overflow: hidden;
+}
+
+.room-bar__fill {
+  height: 100%;
+  background: linear-gradient(90deg, $color-primary, $color-accent);
+  border-radius: $radius-md;
+}
+
+/* —— ⑥ 关键指标：进度条 —— */
+.metric-row {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-sm;
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.metric-name {
+  flex-shrink: 0;
+  width: 96rpx;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.metric-track {
+  flex: 1;
+  min-width: 0;
+  height: 20rpx;
+  background: $color-border;
+  border-radius: $radius-md;
+  overflow: hidden;
+}
+
+.metric-fill {
+  height: 100%;
+  border-radius: $radius-md;
+}
+.metric-fill--primary {
+  background: linear-gradient(90deg, $color-primary, $color-accent);
+}
+.metric-fill--success {
+  background: $color-success;
+}
+.metric-fill--danger {
+  background: $color-danger;
+}
+
+.metric-val {
+  flex-shrink: 0;
+  width: 84rpx;
+  text-align: right;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.metric-chips {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-lg;
+}
+
+.m-chip {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-sm 0;
+  background: $color-bg;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-md;
+}
+
+.m-chip__n {
+  font-size: $font-size-lg;
+  font-weight: 700;
+  color: $color-text;
+}
+
+.m-chip__l {
+  margin-top: 4rpx;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+/* ══════════════ 座位操作面板 ══════════════ */
+.seat-panel-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.seat-panel {
+  width: 100%;
+  box-sizing: border-box;
+  padding: $spacing-xl $spacing-lg calc(#{$spacing-xl} + env(safe-area-inset-bottom));
+  background: $color-surface;
+  border-radius: $radius-lg $radius-lg 0 0;
+  box-shadow: 0 -8rpx 32rpx rgba(0, 0, 0, 0.12);
+}
+
+.seat-panel__head {
+  display: flex;
+  align-items: baseline;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
+}
+
+.seat-panel__title {
+  font-size: $font-size-xl;
+  font-weight: 700;
+  color: $color-text;
+}
+
+.seat-panel__sub {
+  flex: 1;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.seat-panel__close {
+  font-size: $font-size-lg;
+  color: $color-text-secondary;
+  padding: 4rpx 12rpx;
+}
+
+.seat-panel__section {
+  margin-bottom: $spacing-lg;
+}
+
+.seat-panel__label {
+  display: block;
+  margin-bottom: $spacing-sm;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.seat-panel__status-row {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.seat-panel__opt {
+  flex: 1;
+  padding: $spacing-sm 0;
+  text-align: center;
+  font-size: $font-size-sm;
+  color: $color-text;
+  background: $color-bg;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-md;
+
+  &--active {
+    color: $color-surface;
+    background: $color-primary;
+    border-color: $color-primary;
+  }
+}
+
+.seat-panel__feat-row {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.seat-panel__feat {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  padding: $spacing-sm 0;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  background: $color-bg;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-md;
+
+  &--on {
+    color: $color-primary;
+    border-color: $color-primary;
+    background: rgba(29, 181, 181, 0.08);
+    font-weight: 600;
+  }
+}
+
+.seat-panel__feat-mark {
+  font-weight: 700;
+}
+
+.seat-panel__actions {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-lg;
+}
+
+.seat-panel__btn {
+  flex: 1;
+
+  &--save {
+    color: $color-surface;
+    background: $color-primary;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+  }
+
+  &--del {
+    color: #ffffff;
+    background: $color-danger;
+    border: 2rpx solid $color-danger;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+  }
+}

@@ -1,0 +1,1154 @@
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+// ═══════════════════════════════════════════════════
+// 首页专属配色（青绿主题 + 蓝色主按钮）
+// ═══════════════════════════════════════════════════
+$home-teal: #1DB5B5;            // 青绿（头部渐变起点）
+$home-blue: #1677FF;            // 蓝色主按钮（用户明确要求）
+$home-blue-dark: #0958D9;        // 蓝色 active
+$home-teal-bg: #F0FAFA;         // 页面底色
+$home-card-bg: #FFFFFF;         // 卡片白
+$home-text: #2C3E50;            // 深墨文字
+$home-text-light: #7F8C8D;      // 次文字灰
+$home-border: #E8F4F4;          // 浅青边框
+$home-outline-border: #D9D9D9;  // 次按钮描边灰
+
+.home {
+  padding: 0;
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
+  background: $home-teal-bg;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ═══ 登录失败横幅（非阻断） ═══ */
+.login-banner {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin: $spacing-md $spacing-lg 0;
+  padding: $spacing-sm $spacing-md;
+  background: #FFF7E6;
+  border: 2rpx solid #FFD591;
+  border-radius: $radius-md;
+}
+
+.login-banner__icon {
+  flex-shrink: 0;
+  width: 36rpx;
+  height: 36rpx;
+  line-height: 36rpx;
+  text-align: center;
+  font-weight: 700;
+  color: #FFFFFF;
+  background: #FA8C16;
+  border-radius: 50%;
+  font-size: 24rpx;
+}
+
+.login-banner__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.login-banner__title {
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: #AD6800;
+}
+
+.login-banner__desc {
+  font-size: $font-size-xs;
+  color: #874D00;
+  line-height: 1.5;
+  word-break: break-all;
+}
+
+.login-banner__btn {
+  flex-shrink: 0;
+  font-size: $font-size-xs;
+  color: #FFFFFF;
+  background: #FA8C16;
+  border-radius: $radius-sm;
+  padding: 0 $spacing-lg;
+}
+
+/* ═══════════════════════════════════════════════
+   ① 青绿渐变头部
+   ═══════════════════════════════════════════════ */
+   .home-header {
+    // 【渐变】从左到右：青绿 → 偏蓝青
+    background: linear-gradient(to right, $home-teal 0%, #35C4C4 55%, #4FC3D9 100%);
+  
+    // 【高度】顶部留白 + 底部大留白，让头部整体变高
+    //   padding-bottom 越大，头部越高，卡片叠入空间越大
+    padding: 24rpx $spacing-xl 200rpx;
+  
+    display: flex;
+    flex-direction: column;
+  
+    // 【圆角】底部两角变圆
+    border-bottom-left-radius: 40rpx;
+    border-bottom-right-radius: 40rpx;
+  }
+  
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;   // 【改动】顶部对齐，齿轮贴右上
+    padding-top: 8rpx;
+  }
+  
+  .header-title {
+    font-size: 48rpx;          // 【改动】44 → 48，更醒目
+    font-weight: 700;
+    color: $home-blue;
+    letter-spacing: 2rpx;
+    line-height: 1.2;
+  }
+  
+  .header-subtitle {
+    font-size: $font-size-sm;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: left;
+    margin-top: 6rpx;
+  }
+  
+  /* 齿轮 */
+  .icon-gear {
+    width: 48rpx;
+    height: 48rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 4rpx;          // 【改动】微调齿轮垂直位置
+  
+    &:active {
+      opacity: 0.7;
+    }
+  }
+  
+  .icon-gear__inner {
+    font-size: 40rpx;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1;
+  }
+  
+ /* ═══════════════════════════════════════════════
+   ① 青绿渐变头部
+   ═══════════════════════════════════════════════ */
+.home-header {
+  // 【渐变】从左到右：青绿 → 偏蓝青
+  background: linear-gradient(to right, $home-teal 0%, #35C4C4 55%, #4FC3D9 100%);
+
+  // 【高度】顶部留白 + 底部大留白，让头部整体变高
+  //   padding-bottom 越大，头部越高，卡片叠入空间越大
+  padding: 220rpx $spacing-xl 200rpx;
+
+  display: flex;
+  flex-direction: column;
+
+  // 【改】关键：让内部内容在剩余空间里垂直居中
+  justify-content: center;
+
+  // 【圆角】底部两角变圆
+  border-bottom-left-radius: 40rpx;
+  border-bottom-right-radius: 40rpx;
+  min-height: 420rpx;   // 【改】给头部一个整体高度，居中才有意义
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;   // 【改动】顶部对齐，齿轮贴右上
+  padding-top: 0;
+}
+
+.header-title {
+  font-size: 50rpx;
+  font-weight: 700;
+  color: $home-blue;
+  letter-spacing: 2rpx;
+  line-height: 1.2;
+  margin-top: 100rpx;    // 【加这行】往下推，数值自己调
+}
+
+.header-subtitle {
+  font-size: 25rpx;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: left;
+  margin-top: 6rpx;
+}
+
+/* 齿轮 */
+.icon-gear {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 4rpx;          // 【改动】微调齿轮垂直位置
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.icon-gear__inner {
+  font-size: 40rpx;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1;
+}
+
+/* ═══════════════════════════════════════════════
+   ② Hero 卡片（叠入头部渐变区）
+   ═══════════════════════════════════════════════ */
+.hero-card {
+  // 【关键】负 margin 把卡片往上拉进头部
+  //   数值 = 头部 padding-bottom 的一半左右，让卡片上半截在渐变里
+  margin: -140rpx $spacing-xl 0;
+
+  padding: $spacing-lg;
+  background: $home-card-bg;
+  border-radius: $radius-lg;
+  box-shadow: 0 10rpx 36rpx rgba(29, 181, 181, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-card__left {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-right: $spacing-md;
+}
+
+.hero-card__illustration {
+  width: 300rpx;
+  height: 260rpx;
+}
+
+.hero-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  flex: 1;
+  align-items: stretch;
+}
+
+/* ═══════════════════════════════════════════════
+   ③ 按钮样式（蓝色主按钮 + 白底描边次按钮）
+   ═══════════════════════════════════════════════ */
+.btn {
+  font-size: $font-size-md;
+  font-weight: 500;
+  border-radius: 24rpx;         /* 12px 圆角（用户要求） */
+  height: 88rpx;                 /* 44px 高度（用户要求） */
+  line-height: 88rpx;
+  padding: 0 32rpx;
+  text-align: center;
+  border: none;
+  margin: 0;
+
+  &::after {
+    border: none;
+  }
+
+  &--primary {
+    background: $home-blue;     /* 蓝色填充（用户明确要求） */
+    color: #fff;
+
+    &:active {
+      background: $home-blue-dark;
+    }
+  }
+
+  &--outline {
+    background: #fff;
+    color: $home-text;
+    border: 2rpx solid $home-outline-border; /* 浅灰描边 */
+
+    &:active {
+      background: #f5f5f5;
+    }
+  }
+
+  &--block {
+    display: block;
+    width: 100%;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   ④ Section 容器 + 标题
+   ═══════════════════════════════════════════════ */
+.section {
+  padding: 0 $spacing-xl;
+  margin-top: $spacing-lg;       /* section 之间统一间距 */
+}
+
+.section-title {
+  font-size: $font-size-lg;
+  font-weight: 600;
+  color: $home-text;
+  margin-bottom: $spacing-md;
+  display: block;
+}
+
+/* ═══════════════════════════════════════════════
+   ⑤ AI 推荐三宫格
+   ═══════════════════════════════════════════════ */
+.ai-grid {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.ai-card {
+  flex: 1;
+  background: $home-card-bg;
+  border-radius: $radius-md;
+  padding: $spacing-md $spacing-sm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+  border: 2rpx solid $home-border;
+
+  &:active {
+    background: $home-teal;
+  }
+}
+
+.ai-card__icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-card__icon {
+  width: 64rpx;
+  height: 64rpx;
+}
+
+.ai-card__name {
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: $home-text;
+}
+
+.ai-card__desc {
+  font-size: 18rpx;
+  color: $home-text-light;
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* ═══════════════════════════════════════════════
+   ⑥ 学习计划输入行
+   ═══════════════════════════════════════════════ */
+.plan-input-row {
+  display: flex;
+  align-items: center;
+  background: $home-card-bg;
+  border-radius: 24rpx;
+  border: 2rpx solid $home-border;
+  padding: 6rpx 6rpx 6rpx $spacing-lg;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+.plan-input {
+  flex: 1;
+  height: $control-height-md;
+  font-size: $font-size-md;
+  color: $home-text;
+}
+
+.plan-input-ph {
+  color: #BDC3C7;
+  font-size: $font-size-md;
+}
+
+.plan-submit {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: $home-blue;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &:active {
+    background: $home-blue-dark;
+  }
+}
+
+.plan-submit__arrow {
+  font-size: 40rpx;
+  color: #fff;
+  font-weight: 700;
+  line-height: 1;
+  margin-left: 4rpx;           /* 视觉居中修正 */
+}
+
+/* ═══════════════════════════════════════════════
+   ⑥·b AI 选座：一行入口 + 弹窗（偏好选择 / 结果卡片）
+   ═══════════════════════════════════════════════ */
+
+/* 首页只留一行入口，降低冗余感；点开才是完整流程 */
+.recommend-entry {
+  background: $home-card-bg;
+  border-radius: $radius-lg;
+  border: 2rpx solid $home-border;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+  padding: $spacing-md $spacing-lg;
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+
+  &:active {
+    background: $color-bg-page;
+  }
+}
+
+.recommend-entry__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.recommend-entry__title {
+  font-size: $font-size-md;
+  font-weight: 600;
+  color: $home-text;
+}
+
+.recommend-entry__desc {
+  font-size: $font-size-xs;
+  color: $home-text-light;
+}
+
+/* 推荐请求进行中：入口卡片整体降透明 + 禁点反馈 */
+.recommend-entry--loading {
+  opacity: 0.75;
+}
+
+.recommend-entry__arrow {
+  font-size: 40rpx;
+  color: $home-text-light;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* 弹窗容器 */
+/* 偏好 / 时长选项行：可多选的属性 chips + 单选时长。
+   选中态用主色描边 + 浅底，未选中为灰描边，与座位页筛选 chips 观感一致。 */
+.pref-row {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.pref-chip {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 10rpx 0;
+  border-radius: 999rpx;
+  border: 2rpx solid $home-border;
+  background: $color-bg-page;
+  font-size: $font-size-xs;
+  color: $home-text-light;
+  text-align: center;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+
+  &--on {
+    border-color: $home-blue;
+    background: rgba(64, 128, 255, 0.1);
+    color: $home-blue;
+    font-weight: 600;
+  }
+}
+
+/* 「换偏好重推」内联小面板（非弹层，用户反馈不要占满屏宽的弹层） */
+.pref-panel {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  padding: $spacing-sm 0;
+}
+
+.pref-panel__go {
+  height: 64rpx;
+  line-height: 64rpx;
+  text-align: center;
+  border-radius: 999rpx;
+  background: $home-blue;
+  color: #fff;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:active {
+    background: $home-blue-dark;
+  }
+
+  &.is-loading {
+    opacity: 0.7;
+  }
+}
+
+/* 推荐结果：小卡片横向滑动（与「热门场景」卡片同风格，宽约 45% 屏宽） */
+.rec-mini-area {
+  margin-top: $spacing-sm;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.rec-mini-scroll {
+  white-space: nowrap;
+  width: 100%;
+}
+
+.rec-mini {
+  display: inline-flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  width: 320rpx;
+  margin-right: $spacing-sm;
+  padding: $spacing-md;
+  box-sizing: border-box;
+  background: #FFFFFF;
+  border: 2rpx solid $home-border;
+  border-radius: $radius-lg;
+  box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.06);
+  vertical-align: top;
+  white-space: normal;
+}
+
+.rec-mini__seat {
+  font-size: $font-size-md;
+  font-weight: 700;
+  color: $home-text;
+}
+
+.rec-mini__room {
+  font-size: $font-size-xs;
+  color: $home-text-light;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rec-mini__feats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6rpx;
+}
+
+.rec-mini__feat {
+  padding: 2rpx 12rpx;
+  border-radius: 999rpx;
+  border: 2rpx solid rgba(124, 58, 237, 0.45);
+  background: rgba(124, 58, 237, 0.07);
+  font-size: $font-size-2xs;
+  color: #6D28D9;
+}
+
+.rec-mini__reason {
+  font-size: $font-size-xs;
+  color: $home-teal;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.rec-mini__cta {
+  height: 56rpx;
+  line-height: 56rpx;
+  text-align: center;
+  border-radius: 999rpx;
+  background: $home-blue;
+  color: #fff;
+  font-size: $font-size-xs;
+  font-weight: 600;
+
+  &:active {
+    background: $home-blue-dark;
+  }
+}
+
+.rec-mini-empty {
+  font-size: $font-size-sm;
+  color: $home-text-light;
+  text-align: center;
+  padding: $spacing-md 0;
+}
+
+
+.empty-picks {
+  font-size: $font-size-sm;
+  color: $home-text-light;
+  text-align: center;
+  padding: $spacing-md 0;
+}
+
+/* ═══════════════════════════════════════════════
+   ⑧ 学习计划弹窗（v2：渐变头部 + 时间轴分段 + AI 课程推荐）
+   ═══════════════════════════════════════════════ */
+.plan-modal-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.plan-modal {
+  width: 88%;
+  max-width: 660rpx;
+  max-height: 82vh;
+  background: $home-card-bg;
+  border-radius: 32rpx;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/** 渐变头部 */
+.plan-modal-hero {
+  background: linear-gradient(135deg, $home-teal 0%, #2EC4C4 70%, $home-blue 130%);
+  padding: $spacing-lg $spacing-lg $spacing-md;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  flex-shrink: 0;
+}
+
+.plan-modal-hero__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.plan-modal-title {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 1rpx;
+}
+
+.plan-modal-source {
+  font-size: $font-size-xs;
+  padding: 4rpx $spacing-sm;
+  border-radius: $radius-sm;
+  background: rgba(255, 255, 255, 0.22);
+  color: #FFFFFF;
+  backdrop-filter: blur(4rpx);
+
+  &--fallback {
+    background: rgba(255, 255, 255, 0.22);
+    color: #FFF3D6;
+  }
+}
+
+.plan-modal-goal {
+  margin-top: $spacing-xs;
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.plan-modal-summary {
+  font-size: $font-size-sm;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/** 可滚动内容区 */
+.plan-modal-body {
+  padding: $spacing-lg;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  overflow-y: auto;
+}
+
+.plan-modal-label {
+  font-size: $font-size-xs;
+  color: $home-text-light;
+  font-weight: 600;
+  letter-spacing: 2rpx;
+}
+
+.plan-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+/** 时间轴分段卡片 */
+.plan-block {
+  display: flex;
+  gap: $spacing-sm;
+  align-items: stretch;
+}
+
+.plan-block-dot {
+  flex-shrink: 0;
+  width: 14rpx;
+  height: 14rpx;
+  margin-top: 24rpx;
+  border-radius: 50%;
+  background: $home-teal;
+  border: 4rpx solid rgba(29, 181, 181, 0.25);
+  box-shadow: 0 0 0 6rpx rgba(29, 181, 181, 0.1);
+}
+
+.plan-block-card {
+  flex: 1;
+  min-width: 0;
+  background: $home-teal-bg;
+  border: 2rpx solid $home-border;
+  border-radius: $radius-md;
+  padding: $spacing-sm $spacing-md;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.plan-block--tappable:active .plan-block-card {
+  transform: scale(0.98);
+  box-shadow: 0 6rpx 16rpx rgba(29, 181, 181, 0.12);
+}
+
+.plan-block-head {
+  display: flex;
+  align-items: baseline;
+  gap: $spacing-sm;
+}
+
+.plan-block-index {
+  flex-shrink: 0;
+  font-size: $font-size-xs;
+  color: $home-teal;
+  font-weight: 700;
+  background: rgba(29, 181, 181, 0.12);
+  padding: 2rpx 10rpx;
+  border-radius: 999rpx;
+}
+
+.plan-block-title {
+  flex: 1;
+  font-size: $font-size-md;
+  color: $home-text;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.plan-block-duration {
+  flex-shrink: 0;
+  font-size: $font-size-xs;
+  color: $home-teal;
+  font-weight: 600;
+}
+
+.plan-block-tip {
+  font-size: $font-size-sm;
+  color: $home-text-light;
+  line-height: 1.4;
+}
+
+.plan-block-cta {
+  align-self: flex-end;
+  font-size: $font-size-xs;
+  color: $home-blue;
+  font-weight: 600;
+}
+
+/** AI 课程推荐 */
+.plan-courses {
+  margin-top: $spacing-xs;
+  border-radius: $radius-md;
+  background: linear-gradient(180deg, #F3FAFF 0%, #F7FFFE 100%);
+  border: 2rpx solid #E4F0F8;
+  padding: $spacing-md;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.plan-courses__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.plan-courses__title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.plan-courses__spark {
+  font-size: $font-size-md;
+  color: $home-blue;
+  line-height: 1;
+}
+
+.plan-courses__title {
+  font-size: $font-size-md;
+  font-weight: 700;
+  color: $home-text;
+}
+
+/** 来源标签：AI = 蓝绿渐变小签；降级 = 琥珀描边签 */
+.plan-courses__tag {
+  font-size: 20rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40rpx;
+  line-height: 1;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(135deg, $home-blue, $home-teal);
+  color: #FFFFFF;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  white-space: nowrap;
+
+  &--fallback {
+    background: #FFF7E6;
+    color: #D48806;
+    border: 2rpx solid #FFE1A6;
+  }
+}
+
+.plan-courses__topic {
+  font-size: $font-size-sm;
+  color: $home-text-light;
+  line-height: 1.5;
+}
+
+.plan-courses__list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.plan-course {
+  background: $home-card-bg;
+  border-radius: $radius-sm;
+  padding: $spacing-sm $spacing-md;
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+  border: 2rpx solid $home-border;
+}
+
+.plan-course__index {
+  flex-shrink: 0;
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 12rpx;
+  background: rgba(22, 119, 255, 0.08);
+  color: $home-blue;
+  font-size: 22rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2rpx;
+}
+
+.plan-course__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.plan-course__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-xs;
+}
+
+.plan-course__title {
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: $home-text;
+  flex: 1;
+  min-width: 0;
+}
+
+.plan-course__level {
+  font-size: 20rpx;
+  line-height: 1;
+  color: $home-teal;
+  background: rgba(29, 181, 181, 0.1);
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
+  flex-shrink: 0;
+}
+
+.plan-course__reason {
+  font-size: $font-size-xs;
+  color: $home-text-light;
+  line-height: 1.5;
+}
+
+.plan-course__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+}
+
+.plan-course__tag {
+  font-size: 20rpx;
+  line-height: 1;
+  color: #5A7A8C;
+  background: #F2F7FA;
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
+}
+
+.plan-courses-loading {
+  padding: $spacing-md;
+  text-align: center;
+  font-size: $font-size-sm;
+  color: $home-text-light;
+  background: $home-teal-bg;
+  border-radius: $radius-md;
+}
+
+/** 主 CTA */
+.plan-modal-cta {
+  margin-top: $spacing-xs;
+}
+
+.plan-modal-close {
+  margin-top: $spacing-sm;
+  display: flex;
+  justify-content: center;
+}
+
+.plan-modal-close-text {
+  font-size: $font-size-sm;
+  color: $home-text-light;
+}
+
+/* ═══════════════════════════════════════════════
+   ⑨ C2 待签到卡（置顶：待签到 / 即将超时 / 已释放）
+   与 myReservations 的卡片视觉同源：白底卡片 + 主行动按钮。
+   ═══════════════════════════════════════════════ */
+.checkin-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: $spacing-lg $spacing-xl $spacing-lg;
+  padding: $spacing-lg;
+  background: $home-card-bg;
+  border-radius: $radius-lg;
+  border-left: 8rpx solid $home-teal;
+  box-shadow: 0 6rpx 24rpx rgba(23, 62, 83, 0.08);
+}
+
+.checkin-card--danger {
+  border-left-color: #F56C6C;
+}
+
+.checkin-card--released {
+  border-left-color: #C0C4CC;
+  opacity: 0.85;
+}
+
+.checkin-card__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.checkin-card__badge {
+  align-self: flex-start;
+  font-size: 20rpx;
+  line-height: 1;
+  color: $home-teal;
+  background: rgba(29, 181, 181, 0.12);
+  border-radius: 6rpx;
+  padding: 6rpx 12rpx;
+  margin-bottom: $spacing-xs;
+}
+
+.checkin-card--danger .checkin-card__badge {
+  color: #F56C6C;
+  background: rgba(245, 108, 108, 0.1);
+}
+
+.checkin-card--released .checkin-card__badge {
+  color: $home-text-light;
+  background: rgba(127, 140, 141, 0.12);
+}
+
+.checkin-card__title {
+  font-size: $font-size-md;
+  font-weight: 600;
+  color: $home-text;
+  line-height: 1.3;
+}
+
+.checkin-card__desc {
+  margin-top: 4rpx;
+  font-size: $font-size-xs;
+  color: $home-text-light;
+  line-height: 1.4;
+}
+
+.checkin-card__btn {
+  flex-shrink: 0;
+  margin-left: $spacing-md;
+  min-width: 160rpx;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  border-radius: 999rpx;
+  padding: 0 $spacing-lg;
+  line-height: 2.4;
+}
+
+.checkin-card__btn--active {
+  background: $home-blue;
+  color: #FFFFFF;
+  border: none;
+}
+
+.checkin-card__btn--disabled {
+  background: #F0F5F9;
+  color: $home-text-light;
+  border: 2rpx solid #D9E2E8;
+}
+
+.checkin-card__btn--loading {
+  opacity: 0.75;
+}
+
+.checkin-card__spinner {
+  width: 28rpx;
+  height: 28rpx;
+  display: inline-block;
+  border: 3rpx solid rgba(255, 255, 255, 0.45);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: checkin-spin 0.7s linear infinite;
+  vertical-align: -2rpx;
+}
+
+@keyframes checkin-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════════════
+   ⑩ AI 推荐加载态 + 计划输入加载态
+   ═══════════════════════════════════════════════ */
+
+/* AI 卡片禁用态（请求中） */
+.ai-card--disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* AI 卡片图标区旋转加载 */
+.ai-card__loading {
+  width: 64rpx;
+  height: 64rpx;
+  border: 4rpx solid $home-border;
+  border-top-color: $home-teal;
+  border-radius: 50%;
+  animation: ai-spin 0.8s linear infinite;
+}
+
+@keyframes ai-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* AI 加载提示文字 */
+.ai-loading-tip {
+  margin-top: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  background: rgba(29, 181, 181, 0.08);
+  border-radius: $radius-sm;
+  text-align: center;
+}
+
+.ai-loading-text {
+  font-size: $font-size-sm;
+  color: $home-teal;
+}
+
+/* 计划输入行加载态 */
+.plan-input-row--loading {
+  border-color: $home-teal;
+  box-shadow: 0 4rpx 16rpx rgba(29, 181, 181, 0.15);
+}
+
+/* 计划提交按钮加载态 */
+.plan-submit--loading {
+  background: $home-teal;
+  animation: plan-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes plan-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* 提交按钮内旋转 */
+.plan-submit__spinner {
+  width: 32rpx;
+  height: 32rpx;
+  border: 3rpx solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: ai-spin 0.8s linear infinite;
+}
+
+/* 计划生成提示文字 */
+.plan-loading-tip {
+  margin-top: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  background: rgba(29, 181, 181, 0.08);
+  border-radius: $radius-sm;
+  text-align: center;
+}
+
+.plan-loading-text {
+  font-size: $font-size-sm;
+  color: $home-teal;
+}

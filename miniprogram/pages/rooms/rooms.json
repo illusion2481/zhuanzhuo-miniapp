@@ -1,0 +1,1 @@
+{"navigationBarTitleText": "自习室", "navigationBarBackgroundColor": "#1DB5B5", "navigationBarTextStyle": "white", "usingComponents": {"empty-state": "/components/EmptyState/EmptyState", "loading-state": "/components/LoadingState/LoadingState"}}

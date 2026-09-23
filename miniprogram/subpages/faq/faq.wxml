@@ -1,0 +1,16 @@
+<view class="page">
+  <view class="page-title">常见问题</view>
+  <view class="faq-tip">先看看这里，大部分问题都有答案；解决不了再找我们。</view>
+
+  <view wx:for="{{list}}" wx:key="q" class="faq-card">
+    <view class="faq-q">{{item.q}}</view>
+    <view class="faq-a">{{item.a}}</view>
+  </view>
+
+  <view class="faq-foot">
+    <view class="faq-foot__title">还没解决？</view>
+    <button class="btn btn--medium btn--primary faq-btn" bindtap="goFeedback">提交意见反馈</button>
+    <button class="btn btn--medium btn--ghost faq-btn" bindtap="goAiChat">找 AI 客服</button>
+    <view class="faq-foot__tip">AI 客服 24 小时在线秒回；复杂问题页内可一键转人工。</view>
+  </view>
+</view>

@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "module": "CommonJS",
+    "strict": true,
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "types": ["miniprogram-api-typings"]
+  },
+  "include": ["miniprogram/**/*.ts", "cloudfunctions/**/*.ts", "scripts/**/*.ts"],
+  "exclude": ["node_modules", "miniprogram/miniprogram_npm"]
+}

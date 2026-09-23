@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "学习",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark",
+  "usingComponents": {
+    "empty-state": "/components/EmptyState/EmptyState",
+    "loading-state": "/components/LoadingState/LoadingState",
+    "error-state": "/components/ErrorState/ErrorState"
+  }
+}

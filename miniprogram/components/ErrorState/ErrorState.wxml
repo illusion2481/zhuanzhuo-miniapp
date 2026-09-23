@@ -1,0 +1,6 @@
+<view class="error-state">
+  <view class="error-state-icon" aria-hidden="true">!</view>
+  <text class="error-state-title">{{title}}</text>
+  <text wx:if="{{description}}" class="error-state-desc">{{description}}</text>
+  <button wx:if="{{actionText}}" class="error-state-action" bindtap="onActionTap">{{actionText}}</button>
+</view>

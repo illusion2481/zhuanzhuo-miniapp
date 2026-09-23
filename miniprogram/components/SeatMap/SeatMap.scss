@@ -1,0 +1,256 @@
+@import '../../styles/variables.scss';
+
+.seat-map {
+  width: 100%;
+}
+
+/* ═══════════════ 平面图模式 ═══════════════ */
+.seat-map__floorplan {
+  width: 100%;
+  border-radius: $radius-md;
+  overflow: hidden;
+  box-shadow: $shadow-soft;
+  background: $color-surface;
+}
+
+/* 可拖动滚动容器：填满可用高度 */
+.seat-map__scroll {
+  width: 100%;
+  height: 64vh;
+  white-space: nowrap;
+}
+
+/* 画布略大于屏幕 → 可平移查看整张图 */
+.seat-map__canvas {
+  position: relative;
+  width: 112%;
+}
+
+.seat-map__bg {
+  width: 100%;
+  display: block;
+}
+
+/* 覆盖层与底图同尺寸，座位按 % 定位 */
+.seat-map__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.seat-map__hint {
+  padding: $spacing-xs $spacing-sm;
+  text-align: center;
+  font-size: $font-size-2xs;
+  color: $color-text-secondary;
+}
+
+/* 实心座位按钮：覆盖桌面区域，状态用实色填充 + 描边区分 */
+.fp-seat {
+  position: absolute;
+  transform: translate(-50%, -50%); /* 以座位中心定位 */
+  border-radius: $radius-sm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #36B37E; /* 空闲：实心绿 */
+  border: 3rpx solid #2d9a5f;
+  box-shadow: 0 3rpx 14rpx rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  /* 让整块桌面可点（不止文字） */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  &:active {
+    transform: translate(-50%, -50%) scale(1.12);
+    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.4);
+    z-index: 20;
+  }
+}
+
+.fp-seat__label {
+  font-size: 13rpx;
+  line-height: 1;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.fp-seat--reserved {
+  background: #E5484D;
+  border-color: #C73840;
+}
+
+.fp-seat--in-use {
+  background: #E5484D;
+  border-color: #C73840;
+}
+
+.fp-seat--maintain {
+  background: #9CA3AF;
+  border-color: #7D8590;
+}
+
+.fp-seat--disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* 我的预约：琥珀金描边 + 实心填充 + 「我」角标，与红（他人占用）/绿（空闲）明确区分。
+   与查看时段无关，只要本人有活跃/即将开始的预约就常驻显示，解决「退出后台重进看不到自己约的座位」。 */
+.fp-seat--mine {
+  background: #F59E0B;
+  border-color: #D97706;
+  z-index: 15;
+}
+
+.fp-seat__mine {
+  position: absolute;
+  top: -8rpx;
+  right: -8rpx;
+  min-width: 22rpx;
+  height: 22rpx;
+  padding: 0 4rpx;
+  border-radius: 11rpx;
+  background: #fff;
+  color: #D97706;
+  font-size: 14rpx;
+  line-height: 22rpx;
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* 特征筛选高亮：紫色描边 + 发光，叠在状态色之上（空闲/已约/维护都能被标出）。
+   紫色与绿/红/灰状态色对比强烈，替换原先看不清的金黄色（用户反馈）。 */
+.fp-seat--hl {
+  border-color: #7C3AED;
+  box-shadow: 0 0 0 4rpx rgba(124, 58, 237, 0.95), 0 0 22rpx rgba(139, 92, 246, 0.85);
+  z-index: 10;
+}
+
+.seat--hl {
+  /* 网格座位无 border，用外发光环表示高亮，避免 border 撑坏绝对定位尺寸 */
+  box-shadow: 0 0 0 4rpx rgba(124, 58, 237, 0.95), 0 0 22rpx rgba(139, 92, 246, 0.85);
+  z-index: 10;
+}
+
+/* ═══════════════ 网格模式（原有） ═══════════════ */
+.room {
+  border: 4rpx solid $color-primary;
+  border-radius: $radius-md;
+  padding: $spacing-sm;
+  background: $color-surface;
+  box-shadow: $shadow-soft;
+  overflow-x: auto;
+}
+
+.room__grid {
+  position: relative;
+  margin: 0 auto;
+}
+
+.cell {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.seat {
+  position: absolute;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $color-seat-free;
+}
+
+.seat--reserved {
+  background: $color-seat-reserved;
+}
+
+.seat--in-use {
+  background: $color-seat-in-use;
+}
+
+.seat--maintain {
+  background: $color-seat-maintain;
+}
+
+.seat--disabled {
+  opacity: 0.45;
+}
+
+/* 我的预约：网格模式同样用琥珀金标识（与平面图模式一致） */
+.seat--mine {
+  background: #F59E0B;
+}
+
+.seat__mine {
+  position: absolute;
+  top: -6rpx;
+  right: -6rpx;
+  min-width: 20rpx;
+  height: 20rpx;
+  padding: 0 3rpx;
+  border-radius: 10rpx;
+  background: #fff;
+  color: #D97706;
+  font-size: 13rpx;
+  line-height: 20rpx;
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+/* ═══════════════ 非实时数据：状态不可信 ═══════════════
+   座位 status 全部来自静态定义（降级到 categoryList / 本地演示数据），
+   一律显示为「空闲」并不代表真的能约。统一转灰 + 虚线描边，示意「未知」。 */
+.seat-map--unknown {
+  .fp-seat {
+    background: $color-muted-surface;
+    border: 3rpx dashed #FFFFFF;
+    box-shadow: none;
+  }
+
+  .fp-seat--maintain {
+    background: $color-seat-maintain;
+    border-style: solid;
+  }
+
+  .seat {
+    background: $color-muted-surface;
+    border: 2rpx dashed #FFFFFF;
+    box-sizing: border-box;
+  }
+
+  .seat--maintain {
+    background: $color-seat-maintain;
+    border-style: solid;
+  }
+}
+
+.room__door {
+  margin-top: $spacing-xs;
+  text-align: center;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  border-top: 2rpx dashed $color-border;
+  padding-top: $spacing-xs;
+}

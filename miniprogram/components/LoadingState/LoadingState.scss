@@ -1,0 +1,14 @@
+@import '../../styles/variables.scss';
+
+.loading {
+  padding: 80rpx 32rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.loading-tip {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}

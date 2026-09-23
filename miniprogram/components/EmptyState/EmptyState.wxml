@@ -1,0 +1,11 @@
+<view class="empty">
+  <view class="empty-icon">{{icon}}</view>
+  <text class="empty-title">{{title}}</text>
+  <text class="empty-desc" wx:if="{{description}}">{{description}}</text>
+  <button
+    wx:if="{{retryable}}"
+    class="empty-retry"
+    size="mini"
+    bindtap="onRetry"
+  >{{retryText}}</button>
+</view>

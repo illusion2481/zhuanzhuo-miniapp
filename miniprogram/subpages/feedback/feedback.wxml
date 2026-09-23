@@ -1,0 +1,125 @@
+<view class="page">
+  <view class="page-title">意见反馈</view>
+
+  <view class="card">
+    <view class="field-label">反馈类型</view>
+    <view class="cat-row">
+      <view
+        wx:for="{{categories}}"
+        wx:key="*this"
+        class="cat-chip {{activeCategory === item ? 'cat-chip--on' : ''}}"
+        data-cat="{{item}}"
+        bindtap="onPickCategory"
+      >{{item}}</view>
+    </view>
+
+    <view class="field-label">详细描述</view>
+    <textarea
+      class="fb-textarea"
+      placeholder="请描述你遇到的问题或建议（至少 5 个字）"
+      maxlength="500"
+      value="{{content}}"
+      bindinput="onContentInput"
+    />
+
+    <view class="field-label">截图（选填，最多 4 张）</view>
+    <view class="img-row">
+      <view wx:for="{{images}}" wx:key="index" class="img-item">
+        <image class="img-thumb" src="{{item}}" mode="aspectFill" />
+        <view class="img-del" data-index="{{index}}" bindtap="onRemoveImage">✕</view>
+      </view>
+      <view wx:if="{{images.length < 4}}" class="img-add" bindtap="onChooseImage">＋</view>
+    </view>
+  </view>
+
+  <button
+    class="btn btn--primary fb-submit"
+    loading="{{submitting}}"
+    disabled="{{submitting}}"
+    bindtap="onSubmit"
+  >{{submitting ? '提交中…' : '提交反馈'}}</button>
+  <view class="fb-tip">我们会在后台看到你的反馈，处理结果会显示在下方「我的反馈」。</view>
+
+  <!-- ═══ 我的反馈：客服闭环的用户侧（后台回复在这里可见） ═══ -->
+  <view class="section-title">我的反馈</view>
+
+  <view wx:if="{{myError}}" class="fb-mine__error">{{myError}}</view>
+  <view wx:if="{{!myList.length && !myLoading}}" class="fb-mine__empty">还没有提交过反馈</view>
+
+  <view wx:for="{{myList}}" wx:key="feedback_id" class="fb-mine__card">
+    <view class="fb-mine__head">
+      <text class="fb-mine__cat">{{item.category}}</text>
+      <text class="fb-mine__status fb-mine__status--{{item.status}}">{{item.status_text}}</text>
+      <text class="fb-mine__time">{{item.time_label}}</text>
+    </view>
+    <view class="fb-mine__content">{{item.content}}</view>
+    <view wx:if="{{item.images.length}}" class="fb-mine__imgs">
+      <image
+        wx:for="{{item.images}}"
+        wx:for-item="img"
+        wx:key="*this"
+        class="fb-mine__img"
+        src="{{img}}"
+        mode="aspectFill"
+      />
+    </view>
+    <!-- 后台回复：闭环的另一半 -->
+    <view wx:if="{{item.reply}}" class="fb-mine__reply">
+      <text class="fb-mine__reply-tag">官方回复</text>
+      <text class="fb-mine__reply-text">{{item.reply}}</text>
+    </view>
+
+    <!-- 我追问过的内容 -->
+    <view wx:for="{{item.followups}}" wx:for-item="fu" wx:key="time_label" class="fb-mine__followup">
+      <text class="fb-mine__followup-tag">我的追问</text>
+      <text class="fb-mine__followup-text">{{fu.content}}</text>
+      <text class="fb-mine__followup-time">{{fu.time_label}}</text>
+    </view>
+
+    <!-- 已回复后：还能继续说一句（工单重开）或确认解决（关闭）。闭环别断在「回了一句」 -->
+    <view wx:if="{{item.status === 'replied'}}" class="fb-mine__acts">
+      <textarea
+        class="fb-mine__input"
+        placeholder="还有问题？继续追问（至少 2 个字）"
+        maxlength="500"
+        value="{{followupDrafts[item.feedback_id]}}"
+        data-id="{{item.feedback_id}}"
+        bindinput="onFollowupInput"
+      />
+      <view class="fb-mine__acts-row">
+        <button
+          class="btn btn--medium btn--primary"
+          loading="{{actingId === item.feedback_id}}"
+          disabled="{{actingId === item.feedback_id}}"
+          data-id="{{item.feedback_id}}"
+          bindtap="onSubmitFollowup"
+        >继续追问</button>
+        <button
+          class="btn btn--medium btn--ghost"
+          disabled="{{actingId === item.feedback_id}}"
+          data-id="{{item.feedback_id}}"
+          bindtap="onCloseFeedback"
+        >问题已解决</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- ═══ 工单 → 人工：等不及或说不清时，升级到客服会话 ═══ -->
+  <view class="fb-upgrade">
+    <view class="fb-upgrade__title">等不及回复，或问题说不清？</view>
+    <view class="fb-upgrade__desc">
+      可直接转人工客服（会带上你的工单上下文）；也可以先看看常见问题，大部分情况那里就有答案。
+    </view>
+    <view class="fb-upgrade__row">
+      <button class="btn btn--medium btn--primary fb-upgrade__btn" bindtap="goFaq">查看常见问题</button>
+      <button
+        class="btn btn--medium btn--ghost fb-upgrade__btn"
+        open-type="contact"
+        session-from="{{contactSessionFrom}}"
+        show-message-card
+        send-message-title="专注座 · 客服"
+        send-message-path="subpages/feedback/feedback"
+      >联系在线客服</button>
+    </view>
+  </view>
+</view>

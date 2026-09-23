@@ -1,0 +1,51 @@
+@import '../../styles/variables.scss';
+
+.empty {
+  padding: 80rpx 32rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.empty-icon {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56rpx;
+  background: rgba(29, 181, 181, 0.06);
+  border: 2rpx solid rgba(29, 181, 181, 0.08);
+  margin-bottom: $spacing-md;
+}
+
+.empty-title {
+  font-size: $font-size-lg;
+  color: $color-text;
+  margin-bottom: 12rpx;
+  font-weight: 500;
+}
+
+.empty-desc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  max-width: 480rpx;
+  line-height: 1.6;
+}
+
+.empty-retry {
+  margin-top: $spacing-md;
+  color: $color-primary;
+  border: 1rpx solid rgba(29, 181, 181, 0.4);
+  border-radius: $radius-sm;
+  background: transparent;
+  padding: 0 $spacing-md;
+  font-size: $font-size-sm;
+  line-height: 2.4;
+}
+
+.empty-retry::after {
+  border: none;
+}

@@ -1,0 +1,93 @@
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xl;
+}
+
+.checkin-card {
+  @include surface-block;
+  width: 100%;
+  padding: $spacing-xl $spacing-lg;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.checkin-icon {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64rpx;
+  color: #fff;
+  margin-bottom: $spacing-lg;
+}
+
+.checkin-icon--success {
+  background: $color-success;
+}
+
+.checkin-icon--loading {
+  background: $color-primary;
+}
+
+.checkin-icon--already,
+.checkin-icon--error,
+.checkin-icon--empty {
+  background: $color-warning;
+}
+
+.checkin-title {
+  font-size: $font-size-lg;
+  font-weight: 600;
+  color: $color-text;
+  margin-bottom: $spacing-sm;
+}
+
+.checkin-seat {
+  font-size: $font-size-md;
+  color: $color-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.checkin-msg {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-xl;
+}
+
+/* 失败态的自助入口：紧贴提示文案，用主色描边示意可点 */
+.checkin-help {
+  width: 100%;
+  box-sizing: border-box;
+  margin: -#{$spacing-lg} 0 $spacing-lg;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  border: 2rpx solid rgba(29, 181, 181, 0.35);
+  background: rgba(29, 181, 181, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: $font-size-sm;
+  color: $color-primary;
+}
+
+.checkin-help__arrow {
+  font-size: $font-size-md;
+  color: $color-primary;
+}
+
+.checkin-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}

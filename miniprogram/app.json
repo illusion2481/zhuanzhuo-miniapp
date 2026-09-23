@@ -1,0 +1,96 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/rooms/rooms",
+    "pages/study/study",
+    "pages/profile/profile",
+    "pages/admin/admin"
+  ],
+  "subPackages": [
+    {
+      "root": "subpages",
+      "pages": [
+        "seats/seats",
+        "rank/rank",
+        "myReservations/myReservations",
+        "checkin/checkin",
+        "feedback/feedback",
+        "faq/faq",
+        "aiChat/aiChat",
+        "profileSetup/profileSetup"
+      ]
+    }
+  ],
+  "preloadRule": {
+    "pages/home/home": {
+      "network": "all",
+      "packages": ["subpages"]
+    }
+  },
+  "window": {
+    "navigationBarTitleText": "专注座",
+    "navigationBarBackgroundColor": "#1DB5B5",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F0FAFA",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#86909C",
+    "selectedColor": "#1677FF",
+    "backgroundColor": "#F0FAFA",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "首页",
+        "iconPath": "assets/tab/home.png",
+        "selectedIconPath": "assets/tab/home-active.png"
+      },
+      {
+        "pagePath": "pages/rooms/rooms",
+        "text": "自习室",
+        "iconPath": "assets/tab/rooms.png",
+        "selectedIconPath": "assets/tab/rooms-active.png"
+      },
+      {
+        "pagePath": "pages/study/study",
+        "text": "学习",
+        "iconPath": "assets/tab/study.png",
+        "selectedIconPath": "assets/tab/study-active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "assets/tab/profile.png",
+        "selectedIconPath": "assets/tab/profile-active.png"
+      },
+      {
+        "pagePath": "pages/admin/admin",
+        "text": "后台",
+        "iconPath": "assets/tab/admin.png",
+        "selectedIconPath": "assets/tab/admin-active.png"
+      }
+    ]
+  },
+  "usingComponents": {
+    "t-button": "tdesign-miniprogram/button/button",
+    "t-loading": "tdesign-miniprogram/loading/loading",
+    "t-empty": "tdesign-miniprogram/empty/empty",
+    "t-tag": "tdesign-miniprogram/tag/tag",
+    "t-toast": "tdesign-miniprogram/toast/toast",
+    "t-popup": "tdesign-miniprogram/popup/popup"
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "到店签到时用于确认你在自习室范围内（仅在点签到时获取）"
+    }
+  },
+  "requiredPrivateInfos": [
+    "getLocation",
+    "chooseLocation"
+  ],
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents",
+  "cloud": true
+}

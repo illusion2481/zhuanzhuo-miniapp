@@ -1,0 +1,274 @@
+<view class="page">
+  <view class="page-header">
+    <view class="page-title">学习</view>
+  </view>
+
+  <loading-state wx:if="{{loading && !current && recent.length === 0 && !loadError}}" />
+
+  <error-state
+    wx:elif="{{loadError}}"
+    title="学习数据加载失败"
+    description="{{loadError}}"
+    action-text="重试"
+    bind:action="onRetryRefresh"
+  />
+
+  <block wx:else>
+    <block wx:if="{{current}}">
+      <view class="timer-block">
+        <view class="timer-meta">
+          <text class="timer-goal">{{current.goal}}</text>
+          <text class="timer-status timer-status--{{isPaused ? 'paused' : 'running'}}">{{current.statusLabel}}</text>
+        </view>
+        <text class="timer-value">{{current.durationLabel}}</text>
+        <view class="timer-sub">
+          <text>{{current.startLabel}}</text>
+          <text>已完成 {{current.pomodoroHint}} 个番茄</text>
+        </view>
+
+        <!-- 番茄阶段：专注 / 休息倒计时 -->
+        <view wx:if="{{current.phaseType}}" class="phase-card phase-card--{{current.phaseType}}">
+          <view class="phase-head">
+            <text class="phase-name">{{current.phaseLabel}}</text>
+            <text class="phase-config" bindtap="onOpenPomodoroSettings">{{current.configLabel}} · 改</text>
+          </view>
+          <text class="phase-remain">{{current.phaseRemain}}</text>
+          <view class="phase-bar">
+            <view class="phase-bar__fill phase-bar__fill--{{current.phaseType}}" style="width: {{current.phasePercent}}%"></view>
+          </view>
+          <view class="phase-steps">
+            <view class="phase-step {{current.phaseType === 'focus' ? 'phase-step--on' : ''}}">
+              <text class="phase-step__dot"></text>
+              <text>专注</text>
+            </view>
+            <text class="phase-step__link">→</text>
+            <view class="phase-step {{current.phaseType === 'break' ? 'phase-step--on' : ''}}">
+              <text class="phase-step__dot"></text>
+              <text>休息</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="timer-actions">
+          <button wx:if="{{!isPaused}}" class="btn btn--large btn--default" disabled="{{actionInFlight}}" bind:tap="onPause">暂停</button>
+          <button wx:if="{{isPaused}}" class="btn btn--large btn--primary" disabled="{{actionInFlight}}" bind:tap="onResume">继续专注</button>
+          <button class="btn btn--large btn--danger timer-actions__danger" disabled="{{actionInFlight}}" bind:tap="onAbandon">结束本次</button>
+          <button class="btn btn--large btn--ghost" disabled="{{actionInFlight}}" bind:tap="onComplete">完成学习</button>
+        </view>
+      </view>
+    </block>
+
+    <block wx:else>
+      <view class="timer-block">
+        <text class="timer-value timer-value--idle">准备开始</text>
+        <input class="goal-input" placeholder="今天的学习目标" value="{{goalInput}}" bindinput="onGoalInput" />
+        <view class="idle-config">
+          <text class="idle-config__text">番茄节奏</text>
+          <view class="idle-config__chips">
+            <view
+              wx:for="{{pomodoroPresets}}"
+              wx:key="label"
+              class="preset-chip {{pomodoroConfig.focus_min === item.focus_min && pomodoroConfig.break_min === item.break_min ? 'preset-chip--on' : ''}}"
+              data-index="{{index}}"
+              bindtap="onPickIdlePreset"
+            >{{item.label}}</view>
+          </view>
+        </view>
+        <button class="btn btn--large btn--primary" disabled="{{actionInFlight}}" bind:tap="onStart">开始专注</button>
+      </view>
+    </block>
+
+    <view class="stats">
+      <view class="stat-card">
+        <text class="stat-label">今日</text>
+        <text class="stat-value">{{todayMinutes}} 分钟</text>
+        <text class="stat-sub">完成 {{todaySessions}} 次学习</text>
+      </view>
+      <view class="stat-card">
+        <text class="stat-label">本周</text>
+        <text class="stat-value">{{weekMinutes}} 分钟</text>
+        <text class="stat-sub">{{weekPomodoros}} 个番茄 · {{weekSessions}} 次学习</text>
+      </view>
+    </view>
+
+    <view wx:if="{{chart.length}}" class="chart-section">
+      <view class="section-title chart-head-row">
+        <text>本周每日学习时长</text>
+        <text class="chart-meta">本周 {{weekMinutes}} 分钟</text>
+      </view>
+      <view class="chart-block">
+        <view wx:if="{{chartEmpty}}" class="chart-empty">本周还没有记录，开始一次专注就会出现在这里</view>
+        <view class="chart-row">
+          <view wx:for="{{chart}}" wx:key="date" class="chart-col">
+            <view class="chart-value">{{item.minutes > 0 ? item.minutes : ''}}</view>
+            <view class="chart-plot">
+              <view class="chart-bar {{item.active ? 'chart-bar--active' : ''}}" style="height: {{item.height}}%;"></view>
+            </view>
+            <text class="chart-label {{item.today ? 'chart-label--today' : ''}} {{item.future ? 'chart-label--future' : ''}}">{{item.label}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="section-title">最近学习</view>
+
+    <view class="recent-list list-in">
+      <block wx:if="{{recent.length}}">
+        <view class="recent-item recent-item--{{item.status}}" wx:for="{{recent}}" wx:key="id">
+          <view class="recent-main">
+            <text class="recent-goal {{item.goal === '（未命名目标）' ? 'recent-goal--ph' : ''}}">{{item.goal}}</text>
+            <text class="recent-status recent-status--{{item.status}}">{{item.statusLabel}}</text>
+            <view class="recent-stats">
+              <text class="recent-stat__value">{{item.durationLabel}}</text>
+              <text class="recent-stat__label">时长</text>
+              <text class="recent-stat__value">{{item.pomodoroHint}}</text>
+              <text class="recent-stat__label">番茄</text>
+            </view>
+          </view>
+          <view class="recent-sub">
+            <text class="recent-time">
+              <text>{{item.startLabel}}</text>
+              <text wx:if="{{item.endLabel}}" class="recent-time__arrow">–</text>
+              <text wx:if="{{item.endLabel}}">{{item.endLabel}}</text>
+            </text>
+            <text class="recent-edit" data-id="{{item.id}}" bindtap="onEditRecent">编辑</text>
+          </view>
+        </view>
+      </block>
+      <block wx:else>
+        <empty-state title="暂无学习记录" description="完成首次专注后，学习记录与 AI 总结会出现在这里" icon="🍅" />
+      </block>
+    </view>
+
+    <view class="section-title">AI 学习总结</view>
+    <view class="ai-summary">
+      <block wx:if="{{aiSummary}}">
+        <view class="ai-summary-card">
+          <view class="ai-summary-meta">
+            <text class="ai-summary-tag ai-summary-tag--{{aiSummary.source}}">{{aiSummary.source === 'ai' ? 'AI 总结' : '基础总结'}}</text>
+            <text class="ai-summary-stats">{{aiSummary.stats.total_minutes}} 分钟 · {{aiSummary.stats.pomodoros}} 番茄 · {{aiSummary.stats.completed_sessions}} 次完成</text>
+          </view>
+          <text class="ai-summary-text">{{aiSummary.summary}}</text>
+          <view wx:if="{{aiSummary.suggestions.length}}" class="ai-suggestions">
+            <text wx:for="{{aiSummary.suggestions}}" wx:key="*this" class="ai-suggestion">· {{item}}</text>
+          </view>
+          <view class="ai-summary-actions">
+            <button class="btn btn--medium btn--primary" loading="{{aiSummaryLoading}}" disabled="{{aiSummaryLoading}}" bind:tap="onFetchAiSummary">重新生成</button>
+            <button class="btn btn--medium btn--ghost" bind:tap="onCloseAiSummary">收起</button>
+          </view>
+        </view>
+      </block>
+      <block wx:else>
+        <view class="ai-summary-card ai-summary-card--idle">
+          <view class="ai-idle">
+            <text class="ai-idle__icon">✨</text>
+            <view class="ai-idle__meta">
+              <text class="ai-idle__title">本周 AI 总结</text>
+              <text class="ai-idle__sub">{{weekMinutes}} 分钟 · {{weekPomodoros}} 🍅 · {{weekSessions}} 次完成</text>
+            </view>
+          </view>
+          <button class="btn btn--medium btn--primary" loading="{{aiSummaryLoading}}" disabled="{{aiSummaryLoading}}" bind:tap="onFetchAiSummary">生成总结</button>
+        </view>
+      </block>
+    </view>
+  </block>
+
+  <!-- ═══ 编辑学习记录（名称 / 时长）═══ -->
+  <view wx:if="{{editVisible}}" class="edit-mask" bindtap="onCloseEdit">
+    <view class="edit-dialog" catchtap="onNoop">
+      <view class="edit-title">编辑学习记录</view>
+
+      <view class="edit-field">
+        <text class="edit-label">名称</text>
+        <input
+          class="edit-input"
+          placeholder="这次学习的名称 / 目标"
+          maxlength="200"
+          value="{{editGoal}}"
+          bindinput="onEditGoalInput"
+        />
+      </view>
+
+      <view class="edit-field">
+        <text class="edit-label">时长（分钟）</text>
+        <input
+          class="edit-input"
+          type="number"
+          placeholder="{{editDurationDisabled ? '进行中不可修改' : '例如 45'}}"
+          value="{{editDuration}}"
+          disabled="{{editDurationDisabled}}"
+          bindinput="onEditDurationInput"
+        />
+      </view>
+
+      <text wx:if="{{editDurationDisabled}}" class="edit-tip">进行中的学习由系统实时计时，完成或结束后即可修改时长。</text>
+
+      <view class="edit-actions">
+        <button class="btn btn--medium btn--default" bind:tap="onCloseEdit">取消</button>
+        <button class="btn btn--medium btn--primary" loading="{{editSaving}}" disabled="{{editSaving}}" bind:tap="onSaveEdit">保存</button>
+      </view>
+      <text class="edit-delete" data-id="{{editId}}" bindtap="onDeleteEdit">删除这条记录</text>
+    </view>
+  </view>
+
+  <!-- ═══ 番茄阶段到点提醒 ═══ -->
+  <view wx:if="{{phaseAlertVisible}}" class="edit-mask" bindtap="onClosePhaseAlert">
+    <view class="phase-dialog" catchtap="onNoop">
+      <text class="phase-dialog__title">{{phaseAlertTitle}}</text>
+      <text class="phase-dialog__body">{{phaseAlertBody}}</text>
+      <view class="edit-actions">
+        <button wx:if="{{phaseAlertCanSkip}}" class="btn btn--medium btn--default" bind:tap="onSkipBreak">跳过休息</button>
+        <button class="btn btn--medium btn--primary" bind:tap="onClosePhaseAlert">知道了</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- ═══ 番茄节奏设置 ═══ -->
+  <view wx:if="{{pomodoroSettingsVisible}}" class="edit-mask" bindtap="onClosePomodoroSettings">
+    <view class="edit-dialog" catchtap="onNoop">
+      <view class="edit-title">番茄节奏</view>
+
+      <view class="edit-field">
+        <text class="edit-label">快捷方案</text>
+        <view class="preset-row">
+          <view
+            wx:for="{{pomodoroPresets}}"
+            wx:key="label"
+            class="preset-chip"
+            data-index="{{index}}"
+            bindtap="onPickPomodoroPreset"
+          >{{item.label}}</view>
+        </view>
+      </view>
+
+      <view class="edit-field">
+        <text class="edit-label">专注时长（分钟）</text>
+        <input
+          class="edit-input"
+          type="number"
+          placeholder="25"
+          value="{{pomodoroFocusInput}}"
+          bindinput="onPomodoroFocusInput"
+        />
+      </view>
+
+      <view class="edit-field">
+        <text class="edit-label">休息时长（分钟）</text>
+        <input
+          class="edit-input"
+          type="number"
+          placeholder="5"
+          value="{{pomodoroBreakInput}}"
+          bindinput="onPomodoroBreakInput"
+        />
+      </view>
+
+      <text class="edit-tip">{{pomodoroRangeHint}}；修改后立即对当前这一轮生效。</text>
+
+      <view class="edit-actions">
+        <button class="btn btn--medium btn--default" bind:tap="onClosePomodoroSettings">取消</button>
+        <button class="btn btn--medium btn--primary" bind:tap="onSavePomodoroConfig">保存</button>
+      </view>
+    </view>
+  </view>
+</view>

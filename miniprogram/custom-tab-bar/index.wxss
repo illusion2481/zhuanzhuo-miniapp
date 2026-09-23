@@ -1,0 +1,68 @@
+/* ══════════════ 自定义 tabBar 样式 ══════════════
+ * 设计：与 app.json 原生 tabBar 一致的浅色风格（#F0FAFA 底 + 青绿选中），
+ * 底部留出安全区（iPhone 横条），组件自身固定定位。
+ * 注意：custom-tab-bar 用 .wxss 而非 .scss（避免依赖工具 SCSS 编译链路），
+ * 因此这里不使用 variables.scss 的变量，直接写死与全局一致的色值。
+ */
+
+/* 容器：固定在底部，高度 56px + 安全区 */
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: stretch;
+  background: #f0fafa;
+  border-top: 1rpx solid rgba(29, 181, 181, 0.12);
+  box-shadow: 0 -2rpx 12rpx rgba(22, 119, 255, 0.04);
+  z-index: 999;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tabbar__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10rpx 0 8rpx;
+  min-width: 0;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tabbar__icon {
+  width: 52rpx;
+  height: 52rpx;
+  margin-bottom: 4rpx;
+}
+
+.tabbar__text {
+  font-size: 20rpx;
+  line-height: 1.2;
+  color: #86909c;
+  white-space: nowrap;
+  transform: scale(0.92);
+  transform-origin: center top;
+}
+
+/* 选中态（青绿，与全局主题一致） */
+.tabbar__item--active .tabbar__text {
+  color: #1db5b5;
+  font-weight: 600;
+}
+
+/* 后台图标上加一个小圆点提示「管理入口」 */
+.tabbar__badge {
+  position: absolute;
+  top: 6rpx;
+  right: calc(50% - 34rpx);
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  background: #ff4d4f;
+  box-shadow: 0 0 0 2rpx #f0fafa;
+}
+
+/* 页面布局补偿：给使用方页面预留底部空间（由页面自行添加，本组件只负责视觉） */

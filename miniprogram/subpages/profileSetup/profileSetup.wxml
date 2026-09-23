@@ -1,0 +1,41 @@
+<view class="page">
+  <view class="setup-card">
+    <view class="setup-title">完善你的资料</view>
+    <view class="setup-sub">昵称会展示给同学和管理员，方便大家认出你</view>
+
+    <!-- 头像：点击选择微信头像（chooseAvatar 是微信当前唯一可用的头像获取方式） -->
+    <button
+      class="avatar-btn"
+      hover-class="avatar-btn--active"
+      open-type="chooseAvatar"
+      bind:chooseavatar="onChooseAvatar"
+    >
+      <image wx:if="{{avatarUrl}}" class="avatar-img" src="{{avatarUrl}}" mode="aspectFill" />
+      <view wx:else class="avatar avatar--tone-{{avatarTone}}">{{avatarChar}}</view>
+      <view class="avatar-edit">换</view>
+    </button>
+
+    <!-- 昵称：必填。type="nickname" 允许用户点一下「使用微信昵称」快速回填 -->
+    <input
+      class="nickname-input"
+      type="nickname"
+      value="{{nickName}}"
+      placeholder="填写昵称（必填）"
+      placeholder-class="nickname-ph"
+      confirm-type="done"
+      maxlength="20"
+      bind:change="onNicknameChange"
+      bind:blur="onNicknameChange"
+      bind:confirm="onNicknameChange"
+    />
+
+    <!-- 提交：昵称必填，未填禁用 -->
+    <button
+      class="btn btn--medium btn--primary setup-btn"
+      loading="{{saving}}"
+      disabled="{{saving || !canSave}}"
+      bind:tap="onSave"
+    >进入专注座</button>
+    <view class="setup-hint">昵称必填；头像可稍后在「我的」再换</view>
+  </view>
+</view>

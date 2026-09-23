@@ -1,0 +1,485 @@
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+.time-row {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.time-label {
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+  min-width: 80rpx;
+}
+
+.time-value {
+  padding: 8rpx 20rpx;
+  background: rgba(29, 181, 181, 0.06);
+  border-radius: 12rpx;
+  font-size: $font-size-md;
+  color: $color-text;
+  min-width: 160rpx;
+  text-align: center;
+}
+
+.legend-row {
+  display: flex;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.legend-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+}
+
+.legend-dot--free {
+  background: $color-success;
+}
+
+.legend-dot--busy {
+  background: $color-seat-reserved; /* 红 · 已约与使用中同色 */
+}
+
+.legend-dot--mine {
+  background: #F59E0B; /* 琥珀金 · 我的预约 */
+}
+
+.legend-dot--maintain {
+  background: $color-seat-maintain; /* 灰 · 维护 */
+}
+
+/* —— 座位详情抽屉（原生实现：遮罩 + 底部面板） —— */
+.drawer-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 40, 40, 0.55);
+  z-index: 1000;
+}
+
+.drawer-panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1001;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: drawer-up 0.24s cubic-bezier(0.22, 0.8, 0.36, 1);
+}
+
+@keyframes drawer-up {
+  from {
+    transform: translateY(30%);
+    opacity: 0.4;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.seat-detail {
+  /* 两侧 48rpx：内容不顶屏幕边，留白更从容 */
+  padding: 16rpx $spacing-xl calc(#{$spacing-xl} + env(safe-area-inset-bottom));
+  background: $color-surface;
+  border-radius: $radius-lg $radius-lg 0 0;
+  box-shadow: 0 -12rpx 40rpx rgba(15, 60, 60, 0.14);
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+
+  /* 抽屉限高时禁止子项被压缩——否则文字行会被上下元素夹成半截 */
+  > view {
+    flex-shrink: 0;
+  }
+}
+
+/* 顶部抓手：暗示可下滑关闭 */
+.drawer-grabber {
+  align-self: center;
+  width: 72rpx;
+  height: 8rpx;
+  border-radius: 999rpx;
+  background: $color-border;
+}
+
+/* 头部：座位名称 + 座位号 */
+.seat-detail__head {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  background: linear-gradient(135deg, rgba($color-primary, 0.14), rgba($color-primary, 0.05));
+}
+
+.seat-detail__head-main {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  min-width: 0;
+}
+
+.seat-detail__title {
+  font-size: $font-size-lg;
+  font-weight: 700;
+  color: $color-text;
+  line-height: 1.3;
+}
+
+.seat-detail__hint {
+  font-size: $font-size-xs;
+  color: $color-muted-ink;
+}
+
+/* 信息卡：时段 / 开放时间（白底分行 + 细分隔线） */
+.seat-detail__info {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4rpx $spacing-md;
+  background: $color-surface;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-md;
+  display: flex;
+  flex-direction: column;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: 18rpx 0;
+
+  & + & {
+    border-top: 2rpx solid rgba(0, 0, 0, 0.05);
+  }
+}
+
+.info-row__label {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  flex-shrink: 0;
+}
+
+.info-row__value {
+  flex: 1;
+  min-width: 0;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: $color-text;
+  text-align: right;
+}
+
+.info-row__value--open {
+  font-weight: 500;
+  color: $color-primary;
+}
+
+.seat-detail__clamp {
+  padding: $spacing-sm $spacing-md;
+  background: rgba(250, 173, 20, 0.12);
+  border-radius: 12rpx;
+  font-size: $font-size-xs;
+  line-height: 1.6;
+  color: #8a6100;
+  text-align: center;
+}
+
+/* 特征分段条：白底圆角胶囊横条 + 轻投影，内部等分居中、青绿字（参考模式图） */
+.feat-bar {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  padding: 20rpx $spacing-sm;
+  background: $color-surface;
+  border-radius: 999rpx;
+  border: 2rpx solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4rpx 14rpx rgba(15, 60, 60, 0.06);
+}
+
+.feat-bar__item {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+  font-size: $font-size-sm;
+  font-weight: 500;
+  color: $color-primary;
+}
+
+/* 提示区：签到指引 + 评价引导合并一张浅底卡 */
+.seat-detail__notices {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20rpx $spacing-md;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.notice-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.notice-row__text {
+  font-size: $font-size-xs;
+  line-height: 1.6;
+
+  &--main {
+    flex: 1;
+    min-width: 0;
+    color: $color-primary;
+    font-weight: 500;
+  }
+
+  &--sub {
+    color: $color-text-secondary;
+  }
+
+  &--score {
+    color: $color-text;
+    font-weight: 600;
+    font-size: $font-size-sm;
+  }
+}
+
+.notice-row__sub {
+  color: $color-text-secondary;
+  font-weight: 400;
+}
+
+.seat-detail__actions {
+  width: 100%;
+  display: flex;
+  gap: $spacing-sm;
+}
+
+/* 原生按钮（替代 t-button）：重置默认样式 */
+.drawer-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 88rpx;
+  line-height: 88rpx;
+  padding: 0;
+  margin: 0;
+  border-radius: 999rpx;
+  font-size: $font-size-md;
+  font-weight: 600;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.05);
+  color: $color-text;
+  border: none;
+
+  &::after {
+    border: none;
+  }
+}
+
+.drawer-btn--primary {
+  background: linear-gradient(135deg, $color-primary, #17a2a2);
+  color: #fff;
+  box-shadow: 0 6rpx 18rpx rgba($color-primary, 0.35);
+}
+
+/* —— 时段控制（单屏选座 + 时长即预约） —— */
+.booking-bar {
+  @include surface-block;
+  padding: $spacing-md $spacing-lg;
+  margin: $spacing-md 0;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.mode-row {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.mode-chip {
+  padding: 10rpx 28rpx;
+  border-radius: 999rpx;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  background: rgba(29, 181, 181, 0.06);
+  border: 1rpx solid transparent;
+}
+
+.mode-chip--active {
+  color: #fff;
+  background: $color-primary;
+}
+
+/* 特征筛选行（靠窗 / 有电源 / 靠窗+电源） */
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+}
+
+.filter-label {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.filter-chip {
+  padding: 8rpx 24rpx;
+  border-radius: 999rpx;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  background: rgba(29, 181, 181, 0.06);
+  border: 1rpx solid transparent;
+}
+
+.filter-chip--active {
+  color: #fff;
+  background: $color-primary;
+}
+
+.duration-row {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.duration-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.duration-chip {
+  padding: 10rpx 24rpx;
+  border-radius: 999rpx;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  background: rgba(29, 181, 181, 0.06);
+  border: 1rpx solid transparent;
+}
+
+.duration-chip--active {
+  color: $color-primary;
+  background: #fff;
+  border-color: $color-primary;
+  font-weight: 600;
+}
+
+.window-summary {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.time-hint {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+/* 结束时间 picker 的可点区：时间块 + 提示一并包进热区（点提示文字也能拉起选择器） */
+.end-picker {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+/* 时段被开放时间截断 / 顺延时的说明（必须显眼：用户有权知道自己实际约到几点） */
+.window-note {
+  padding: $spacing-sm $spacing-md;
+  background: rgba(250, 173, 20, 0.1);
+  border: 2rpx solid rgba(250, 173, 20, 0.45);
+  border-radius: 12rpx;
+  font-size: $font-size-xs;
+  line-height: 1.6;
+  color: #8a6100;
+}
+
+.time-value--readonly {
+  background: rgba(29, 181, 181, 0.04);
+  color: $color-text-secondary;
+}
+
+/* 高亮模式提示横幅 */
+.highlight-banner {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin: $spacing-sm $spacing-xl 0;
+  padding: $spacing-sm $spacing-md;
+  background: linear-gradient(135deg, rgba(29, 181, 181, 0.1), rgba(29, 181, 181, 0.05));
+  border: 2rpx solid rgba(29, 181, 181, 0.3);
+  border-radius: $radius-md;
+}
+
+.highlight-banner__icon {
+  font-size: $font-size-md;
+  line-height: 1;
+}
+
+.highlight-banner__text {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: 500;
+}
+
+/* 演示数据提示（云端未初始化） */
+/* 数据源提示（演示数据 / 实时状态不可用） */
+.demo-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+  margin: $spacing-sm $spacing-xl 0;
+  padding: $spacing-sm $spacing-md;
+  background: $color-warning-soft;
+  border: 2rpx solid $color-warning-border;
+  border-radius: $radius-md;
+}
+
+/* 座位实时状态不可用：升级为红色警示（此时「全绿」不可信） */
+.demo-banner--alert {
+  background: $color-danger-soft;
+  border-color: $color-danger-border;
+}
+
+.demo-banner__icon {
+  flex-shrink: 0;
+  width: 32rpx;
+  height: 32rpx;
+  line-height: 32rpx;
+  text-align: center;
+  border-radius: 50%;
+  background: $color-warning;
+  color: #FFFFFF;
+  font-size: $font-size-xs;
+  font-weight: 600;
+}
+
+.demo-banner--alert .demo-banner__icon {
+  background: $color-danger;
+}
+
+.demo-banner__text {
+  flex: 1;
+  font-size: $font-size-xs;
+  line-height: 1.6;
+  color: $color-warning-ink;
+}
+
+.demo-banner--alert .demo-banner__text {
+  color: $color-danger-ink;
+}

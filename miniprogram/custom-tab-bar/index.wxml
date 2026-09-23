@@ -1,0 +1,18 @@
+<!-- 自定义 tabBar：按角色动态渲染（管理员 5 tab，普通用户 4 tab） -->
+<view class="tabbar">
+  <view
+    wx:for="{{list}}"
+    wx:key="pagePath"
+    class="tabbar__item {{selected === index ? 'tabbar__item--active' : ''}}"
+    data-index="{{index}}"
+    bindtap="onTap"
+  >
+    <image
+      class="tabbar__icon"
+      src="{{selected === index ? item.selectedIconPath : item.iconPath}}"
+      mode="aspectFit"
+    />
+    <text class="tabbar__text">{{item.text}}</text>
+    <view wx:if="{{item.pagePath === '/pages/admin/admin'}}" class="tabbar__badge" />
+  </view>
+</view>

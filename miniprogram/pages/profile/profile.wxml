@@ -1,0 +1,168 @@
+<view class="page">
+  <view class="page-title">我的</view>
+
+  <!-- 登录失败横幅（非阻断：云端不可用时提示 + 一键重试） -->
+  <view wx:if="{{loginError}}" class="login-banner">
+    <view class="login-banner__icon">!</view>
+    <view class="login-banner__body">
+      <text class="login-banner__title">登录状态异常</text>
+      <text class="login-banner__desc">{{loginError}}</text>
+    </view>
+    <button
+      class="login-banner__btn"
+      size="mini"
+      loading="{{loginRetrying}}"
+      disabled="{{loginRetrying}}"
+      bindtap="onRetryLogin"
+    >重试</button>
+  </view>
+
+  <!-- 顶部青绿渐变头像卡 -->
+  <view class="profile-card">
+    <view class="profile-main">
+      <!-- 已登录：点头像换微信头像（chooseAvatar 是微信当前唯一可用的头像获取方式） -->
+      <button
+        wx:if="{{loggedIn}}"
+        class="avatar-btn"
+        hover-class="avatar-btn--active"
+        open-type="chooseAvatar"
+        bind:chooseavatar="onChooseAvatar"
+      >
+        <image wx:if="{{avatarUrl}}" class="avatar-img" src="{{avatarUrl}}" mode="aspectFill" />
+        <view wx:else class="avatar avatar--tone-{{avatarTone}}">{{avatarChar}}</view>
+        <view class="avatar-edit">{{avatarSaving ? '…' : '换'}}</view>
+      </button>
+      <view class="avatar avatar--guest" wx:else>座</view>
+
+      <view class="profile-meta">
+        <!-- 已登录：直接编辑昵称（type="nickname" 会带出「使用微信昵称」快捷填写） -->
+        <input
+          wx:if="{{loggedIn}}"
+          class="nickname-input"
+          type="nickname"
+          value="{{nickName}}"
+          placeholder="填写昵称"
+          placeholder-class="nickname-ph"
+          confirm-type="done"
+          bind:change="onNicknameChange"
+          bind:blur="onNicknameChange"
+          bind:confirm="onNicknameChange"
+        />
+        <text class="profile-name" wx:else>未登录</text>
+        <text class="profile-role" wx:if="{{loggedIn}}">身份：{{role === 'admin' ? '管理员' : '学生'}}</text>
+        <text class="profile-role" wx:else>登录后查看专属学习数据</text>
+      </view>
+    </view>
+    <button class="btn btn--medium btn--primary profile-btn" loading="{{loading}}" disabled="{{loading}}" bind:tap="onLogin">
+      {{loggedIn ? '刷新登录' : '微信登录'}}
+    </button>
+  </view>
+
+  <block wx:if="{{loggedIn}}">
+    <view wx:if="{{profileIncomplete}}" class="setup-banner" bind:tap="goProfileSetup">
+      <view class="setup-banner__body">
+        <text class="setup-banner__title">资料待完善</text>
+        <text class="setup-banner__desc">补全昵称与头像，同学和管理员更容易认出你</text>
+      </view>
+      <text class="setup-banner__btn">去完善 ›</text>
+    </view>
+    <view wx:if="{{banText}}" class="ban-banner">{{banText}}</view>
+    <view class="streak-card">
+      <view class="streak-main">
+        <text class="streak-num">{{streak}}</text>
+        <view class="streak-meta">
+          <text class="streak-title">连续签到（天）</text>
+          <text class="streak-sub">累计签到 {{totalCheckin}} 次 · 已履约 {{totalCheckout}} 次</text>
+        </view>
+      </view>
+      <view class="streak-badge">🔥</view>
+    </view>
+    <!-- 邀请积分卡片：白底 + 上半数据 / 下半操作区 -->
+    <view class="invite-card">
+      <view class="invite-head">
+        <view class="invite-main">
+          <view class="invite-num">{{inviteCredit}}</view>
+          <view class="invite-meta">
+            <text class="invite-title">邀请积分</text>
+            <text class="invite-sub">1 位好友首次签到 = 1 分</text>
+          </view>
+        </view>
+        <view class="invite-badge">已抵免 {{waiverTotalUsed}} 次</view>
+      </view>
+      <view class="invite-ops">
+        <button
+          class="invite-btn invite-btn--waive"
+          size="mini"
+          disabled="{{!waiveAble || waiveSaving}}"
+          loading="{{waiveSaving}}"
+          bind:tap="onWaiveCredit"
+        >抵免违约 -1</button>
+        <button class="invite-btn invite-btn--share" size="mini" open-type="share" bind:tap="onInviteFriend">邀请好友</button>
+      </view>
+      <view class="invite-tip">邀请好友来专注，违约可用积分抵免（上限 10 次）</view>
+    </view>
+    <view class="credit-card">
+      <text class="credit-label">信誉</text>
+      <text class="credit-value">违约 {{noShowCount}} 次</text>
+    </view>
+    <view class="stats-card">
+      <view class="stats-head">
+        <text class="stats-title">今日学习数据</text>
+        <text wx:if="{{statsLoading}}" class="stats-loading">加载中…</text>
+      </view>
+      <view class="stats-grid">
+        <view class="stat-item">
+          <text class="stat-value">{{formatHours}}</text>
+          <text class="stat-label">专注时长</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-value">{{completedCount}}</text>
+          <text class="stat-label">完成次数</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-value">{{pomodoroTotal}}</text>
+          <text class="stat-label">番茄钟</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-value">{{reservationCount}}</text>
+          <text class="stat-label">预约总数</text>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <view class="link-row" bind:tap="goMyReservations">
+    <text>我的预约</text>
+    <text class="arrow">›</text>
+  </view>
+
+  <!-- 常见问题：自助客服，客服会话无人值守时的兜底出口 -->
+  <view class="link-row" bind:tap="goFaq">
+    <text>常见问题</text>
+    <text class="arrow">›</text>
+  </view>
+
+  <!-- 意见反馈：进入反馈表单页（提交到后台「反馈」Tab，处理结果与回复在页内可见） -->
+  <view class="link-row" bind:tap="goFeedback">
+    <text>意见反馈</text>
+    <text class="arrow">›</text>
+  </view>
+
+  <!--
+    客服入口：进入 AI 客服聊天页（项目内聊天）——AI 顶岗 24h 秒回常见问题，
+    答不上 / 需要真人时页内一键「转人工」（微信原生客服会话）或「意见反馈」。
+    这样个人主体也能拥有「有人回」的客服体验，不再依赖你在不在线。
+  -->
+  <view class="link-row link-row--stack link-row--contact" bind:tap="goAiChat">
+    <view class="link-row__main">
+      <text class="link-row__title">联系客服</text>
+      <text class="link-row__sub">AI 秒回常见问题，复杂问题转人工</text>
+    </view>
+    <text class="arrow">›</text>
+  </view>
+
+  <view class="link-row" bind:tap="goRank">
+    <text>排行榜</text>
+    <text class="arrow">›</text>
+  </view>
+</view>

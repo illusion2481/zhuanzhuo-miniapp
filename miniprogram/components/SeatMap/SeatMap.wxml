@@ -1,0 +1,64 @@
+<view class="seat-map {{realtime ? '' : 'seat-map--unknown'}}">
+  <!-- ═══ 平面图模式：可拖动大图 + % 定位透明座位按钮 ═══ -->
+  <view wx:if="{{isFloorPlan}}" class="seat-map__floorplan">
+    <scroll-view
+      class="seat-map__scroll"
+      scroll-x
+      scroll-y
+      enhanced
+      show-scrollbar="{{false}}"
+    >
+      <!-- 画布比屏幕略大，从而可拖动查看全图 -->
+      <view class="seat-map__canvas">
+        <image
+          class="seat-map__bg"
+          src="{{floorPlanImage}}"
+          mode="widthFix"
+          show-menu-by-longpress
+        />
+        <view class="seat-map__overlay">
+          <view
+            wx:for="{{displaySeats}}"
+            wx:key="seat_id"
+            class="fp-seat fp-seat--{{item.status}} {{item.bookable ? '' : 'fp-seat--disabled'}} {{item.highlighted ? 'fp-seat--hl' : ''}} {{item.mine ? 'fp-seat--mine' : ''}}"
+            style="{{item.style}}"
+            data-id="{{item.seat_id}}"
+            bind:tap="onSeatTap"
+          >
+            <text class="fp-seat__label">{{item.short}}</text>
+            <text wx:if="{{item.mine}}" class="fp-seat__mine">我</text>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+    <view class="seat-map__hint">双指/拖动可平移查看整张平面图</view>
+  </view>
+
+  <!-- ═══ 网格模式（原有逻辑） ═══ -->
+  <view wx:else class="room">
+    <view class="room__grid" style="{{gridStyle}}">
+      <view class="cell cell--corner" style="{{cornerStyle}}">楼层</view>
+      <view
+        wx:for="{{colLabels}}"
+        wx:key="label"
+        class="cell cell--axis"
+        style="{{item.style}}"
+      >{{item.label}}</view>
+      <view
+        wx:for="{{rowLabels}}"
+        wx:key="label"
+        class="cell cell--axis"
+        style="{{item.style}}"
+      >{{item.label}}</view>
+      <view
+        wx:for="{{displaySeats}}"
+        wx:key="seat_id"
+        class="seat seat--{{item.status}} {{item.bookable ? '' : 'seat--disabled'}} {{item.highlighted ? 'seat--hl' : ''}} {{item.mine ? 'seat--mine' : ''}}"
+        style="{{item.style}}"
+        data-id="{{item.seat_id}}"
+        bind:tap="onSeatTap"
+      >{{item.short}}<text wx:if="{{item.mine}}" class="seat__mine">我</text></view>
+    </view>
+    <view class="room__door">出入通道</view>
+  </view>
+</view>

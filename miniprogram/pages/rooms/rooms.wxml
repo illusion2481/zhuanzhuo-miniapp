@@ -1,0 +1,110 @@
+<view class="page">
+  <!-- 背景图（用 image 元素实现，小程序不支持 CSS 本地背景图） -->
+  <image class="page-bg" src="/assets/icons/rooms-bg.jpg" mode="widthFix" />
+
+  <view class="page-title">自习室平面图</view>
+
+  <!-- 云端未初始化：演示数据提示 -->
+  <view wx:if="{{demoNotice}}" class="demo-banner">
+    <text class="demo-banner__icon">!</text>
+    <text class="demo-banner__text">{{demoNotice}}</text>
+  </view>
+
+  <!-- 搜索 / 筛选 / 排序（全部本地执行） -->
+  <view class="room-toolbar">
+    <view class="room-search">
+      <text class="room-search__icon">🔍</text>
+      <input
+        class="room-search__input"
+        placeholder="搜索自习室 / 楼栋 / 楼层"
+        placeholder-class="room-search__ph"
+        value="{{keyword}}"
+        bindinput="onKeywordInput"
+        confirm-type="search"
+      />
+      <text wx:if="{{keyword}}" class="room-search__clear" bind:tap="onClearFilters">✕</text>
+    </view>
+
+    <view class="room-toolbar__chips">
+      <view class="room-chips">
+        <view
+          wx:for="{{featureFilters}}"
+          wx:key="key"
+          class="room-chip {{featureFilter === item.key ? 'room-chip--active' : ''}}"
+          data-key="{{item.key}}"
+          bind:tap="onFeatureFilterTap"
+        >{{item.label}}</view>
+      </view>
+    </view>
+
+    <view class="room-toolbar__chips">
+      <view class="room-chips">
+        <view
+          wx:for="{{sorts}}"
+          wx:key="key"
+          class="room-chip room-chip--sort {{sort === item.key ? 'room-chip--active' : ''}}"
+          data-key="{{item.key}}"
+          bind:tap="onSortTap"
+        >{{item.label}}</view>
+      </view>
+    </view>
+  </view>
+ 
+
+  <loading-state wx:if="{{loading}}" tip="加载自习室…" />
+
+  <block wx:elif="{{!empty}}">
+    <view class="venue">
+      <view class="venue__title">楼层平面 · 点击「包间」进入选座</view>
+      <view class="venue__grid">
+        <view
+          wx:for="{{filteredRooms}}"
+          wx:key="room_id"
+          class="box-room"
+          data-room-id="{{item.room_id}}"
+          bind:tap="onRoomTap"
+        >
+          <view class="box-room__cover">
+            <image wx:if="{{item.floorPlanImage}}" class="box-room__bg" src="{{item.floorPlanImage}}" mode="aspectFill" />
+            <view class="box-room__badge {{realtime ? '' : 'box-room__badge--unknown'}}">
+              {{realtime ? '空闲 ' + item.freeCount + '/' + item.total : '占用状态未知'}}
+            </view>
+          </view>
+          <view class="box-room__body">
+            <text class="box-room__name">{{item.name}}</text>
+            <!-- 非实时：格子统一转灰，避免「全绿」被误读成「全部空闲」 -->
+            <view class="box-room__mini {{realtime ? '' : 'box-room__mini--unknown'}}">
+              <view
+                wx:for="{{item.miniSeats}}"
+                wx:for-item="s"
+                wx:key="index"
+                class="mini-seat mini-seat--{{s}}"
+              ></view>
+              <text wx:if="{{item.miniOverflow > 0}}" class="mini-seat-more">+{{item.miniOverflow}}</text>
+            </view>
+            <view class="box-room__foot">{{item.building || '自习室'}}{{item.floor ? ' · ' + item.floor + '楼' : ''}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 筛选后无匹配：区别于「云端确实没数据」 -->
+  <empty-state
+    wx:elif="{{hasRooms}}"
+    title="没有符合条件的自习室"
+    description="换个关键词或筛选条件试试"
+    icon="🔎"
+    retryable="{{false}}"
+  />
+
+  <empty-state
+    wx:else
+    title="暂无自习室数据"
+    description="自习室暂时还没开放，请稍后重试"
+    icon="🏛️"
+    retryable="{{true}}"
+    retryText="重新加载"
+    bind:retry="loadRooms"
+  />
+</view>

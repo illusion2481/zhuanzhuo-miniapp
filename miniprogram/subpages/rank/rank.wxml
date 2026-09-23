@@ -1,0 +1,62 @@
+<view class="page">
+  <view class="page-title">排行榜</view>
+
+  <!-- 榜单切换：专注榜 / 签到榜 -->
+  <view class="seg">
+    <view
+      wx:for="{{boards}}"
+      wx:key="key"
+      class="seg-item {{activeBoard === item.key ? 'seg-item--on' : ''}}"
+      data-key="{{item.key}}"
+      bind:tap="onSwitchBoard"
+    >{{item.label}}</view>
+  </view>
+
+  <view class="seg">
+    <view
+      wx:for="{{periods}}"
+      wx:key="key"
+      class="seg-item {{activePeriod === item.key ? 'seg-item--on' : ''}}"
+      data-key="{{item.key}}"
+      bind:tap="onSwitchPeriod"
+    >{{item.label}}</view>
+  </view>
+
+  <view wx:if="{{me}}" class="me-card">
+    <view class="me-rank">第 {{me.rank}} 名</view>
+    <view class="me-meta" wx:if="{{activeBoard === 'focus'}}">
+      <text class="me-focus">{{fmtFocus(me.focus_sec)}}</text>
+      <text class="me-sub">专注 · {{me.pomodoro}} 番茄 · {{me.sessions}} 次</text>
+    </view>
+    <view class="me-meta" wx:else>
+      <text class="me-focus">{{me.checkin_count || 0}} 次</text>
+      <text class="me-sub">签到</text>
+    </view>
+  </view>
+  <view wx:elif="{{!loading && !errorText}}" class="me-card me-card--empty">
+    <text>{{activeBoard === 'focus' ? '本期还没有你的专注记录，去学习一波冲榜吧' : '本期还没有你的签到记录，预约签到冲榜吧'}}</text>
+  </view>
+
+  <view wx:if="{{errorText}}" class="error-box">{{errorText}}</view>
+
+  <view wx:if="{{list.length}}" class="rank-list">
+    <view
+      wx:for="{{list}}"
+      wx:key="user_id"
+      class="rank-row {{item.is_me ? 'rank-row--me' : ''}} {{item.rank <= 3 ? 'rank-row--top' : ''}}"
+    >
+      <view class="rank-no rank-no--{{item.rank}}">{{item.rank}}</view>
+      <view class="rank-avatar">{{item.char}}</view>
+      <view class="rank-main">
+        <text class="rank-name">{{item.name}}{{item.is_me ? '（我）' : ''}}</text>
+        <text class="rank-sub" wx:if="{{activeBoard === 'focus'}}">{{item.sessions}} 次专注 · {{item.pomodoro}} 番茄</text>
+        <text class="rank-sub" wx:else>签到 {{item.checkin_count || 0}} 次</text>
+      </view>
+      <view class="rank-focus" wx:if="{{activeBoard === 'focus'}}">{{fmtFocus(item.focus_sec)}}</view>
+      <view class="rank-focus" wx:else>{{item.checkin_count || 0}} 次</view>
+    </view>
+  </view>
+
+  <view wx:elif="{{!loading && !errorText}}" class="empty-box">暂无数据</view>
+  <view wx:if="{{loading}}" class="loading-box">加载中…</view>
+</view>
