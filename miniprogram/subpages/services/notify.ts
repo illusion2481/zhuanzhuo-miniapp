@@ -1,7 +1,7 @@
-import { callCloud } from './cloud';
+import { callCloud } from '../../services/cloud';
 import { requestSubscribe, type SubscribeOutcome } from '../utils/subscribe';
 import { SUBSCRIBE_TEMPLATES } from '../config/subscribe';
-import type { BusinessRecord } from '../types/record';
+import type { BusinessRecord } from '../../types/record';
 
 /**
  * 预约相关的订阅消息：授权（前端）+ 发送（云端）。

@@ -259,10 +259,11 @@ async function rewardInviterOnFirstCheckin(userId, nowIso) {
     .catch(() => ({ stats: { updated: 0 } }))
   if (!up || !up.stats || up.stats.updated !== 1) return // 已被并发抢跑
 
-  // 给邀请人 +1（条件更新，防止文档被清）
+  // 给邀请人 +1（每个被邀人首次签到都独立 +1，用 _.inc 天然累加；
+  // 用 .doc(inviter) 与 recordDailyCheckin 保持一致，避免自定义字符串 _id 在 where 下的边界问题）
   await db
     .collection('users')
-    .where({ _id: inviter })
+    .doc(inviter)
     .update({ data: { invite_credit: _.inc(1), updated_at: nowIso } })
     .catch(() => {})
 }

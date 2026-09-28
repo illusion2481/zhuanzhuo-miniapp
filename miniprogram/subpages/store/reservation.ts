@@ -1,4 +1,4 @@
-import type { BusinessRecord } from '../types/record';
+import type { BusinessRecord } from '../../types/record';
 
 /** 当前预约状态 */
 

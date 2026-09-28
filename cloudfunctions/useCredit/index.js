@@ -86,12 +86,36 @@ exports.main = async (event = {}) => {
       );
     }
 
-    const now = new Date().toISOString();
+    const nowMs = Date.now();
+    const now = new Date(nowMs).toISOString();
     const logEntry = {
       at: now,
       credit_after: credit - 1,
       no_show_after: noShow - 1,
     };
+    // 抵免后重新计算封禁：按新的违约次数，且只在「当前仍处封禁期」时缩短/解除。
+    // 否则（已过期或未封禁）保持不变，避免把已解禁的用户重新封回去。
+    // 梯度口径与 login/adminOps 的 banMinutesFor 完全一致（1次=30min / 2次=2h / 3次+=24h）。
+    // ⚠️ 管理员手动封禁（ban_source='admin' 且仍在期内）不受抵免影响：那是管理处罚，
+    // 只能由管理员「解除禁约」或到期自然解除——积分抵免的是违约，不是管理封禁。
+    const newNoShow = noShow - 1;
+    const curBanMs = doc.banned_until ? Date.parse(doc.banned_until) : 0;
+    const stillBanned = Number.isFinite(curBanMs) && curBanMs > nowMs;
+    const adminBanned = doc.ban_source === 'admin' && stillBanned;
+    let newBannedUntil = doc.banned_until || '';
+    if (adminBanned) {
+      // 保持管理封禁原样（下面 update 仍会写同值，无副作用）
+    } else if (newNoShow <= 0) {
+      newBannedUntil = ''; // 违约清零 → 解除封禁
+    } else if (stillBanned) {
+      const newBanMs = (newNoShow <= 1 ? 30 : newNoShow === 2 ? 120 : 1440) * 60 * 1000;
+      const newBanIso = new Date(nowMs + newBanMs).toISOString();
+      // 新封禁更短则缩短；否则保持原到期时间（不延长）
+      newBannedUntil = newBanIso > doc.banned_until ? doc.banned_until : newBanIso;
+    }
+    // 管理封禁已过期时（ban_source 残留但 banned_until 已成过去），清掉标记，
+    // 避免后续自然封禁被 login 自愈误判为管理封禁而跳过孤儿清理
+    const clearBanSource = !adminBanned && newBannedUntil === '';
     // 条件更新：积分 >= 1 才扣（并发安全，只成功一次）。
     // waiver_log 用「读-改-写」方式追加（读旧数组 + 拼新数组），避免依赖 db.command.push。
     let waiverLog = Array.isArray(doc.waiver_log) ? doc.waiver_log : [];
@@ -104,6 +128,9 @@ exports.main = async (event = {}) => {
           invite_credit: _.inc(-1),
           no_show_count: _.inc(-1),
           waiver_total_used: _.inc(1),
+          banned_until: newBannedUntil,
+          // 解除封禁时同步清管理标记（ban_source 只在封禁期内有意义）
+          ...(clearBanSource ? { ban_source: '' } : {}),
           updated_at: now,
           // 留痕：最近一次抵免
           last_waiver_at: now,
@@ -115,7 +142,7 @@ exports.main = async (event = {}) => {
     }
 
     return ok(
-      { credit: credit - 1, no_show_count: noShow - 1, waived_total: waivedTotal + 1, can_waive: true, remaining_waives: WAIVER_LIMIT - (waivedTotal + 1) },
+      { credit: credit - 1, no_show_count: noShow - 1, waived_total: waivedTotal + 1, can_waive: true, remaining_waives: WAIVER_LIMIT - (waivedTotal + 1), banned_until: newBannedUntil },
       '已用 1 积分抵免 1 次违约',
     );
   } catch (err) {

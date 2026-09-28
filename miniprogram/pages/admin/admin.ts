@@ -197,7 +197,10 @@ Page({
       { key: 'completed', label: '已完成' },
     ],
     resvStatus: 'all',
-    resvDate: 'today',
+    // ⚠️ 默认「全部」而非「今日」：商家打开预约 tab 第一眼要看全量订单，
+    // 默认按「今日」会把非今天的预约（含其他用户的）过滤掉，误以为「预约不显示」。
+    // 「今日」仍可在筛选条点选。
+    resvDate: 'all',
     resvCustomDate: '',
     resvList: [] as Array<
       ReservationRow & {
@@ -843,7 +846,8 @@ Page({
     const key = String((e && e.currentTarget && e.currentTarget.dataset.key) || 'dashboard');
     this.setData({ activeTab: key });
     if (!this.data.authorized) return;
-    if (key === 'reservations') this.loadReservations();
+    if (key === 'checkin') this.loadCheckinConfig();
+    else if (key === 'reservations') this.loadReservations();
     else if (key === 'users') this.loadUsers();
     else if (key === 'seats') {
       this.loadSeats();

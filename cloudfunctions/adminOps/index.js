@@ -536,17 +536,22 @@ async function actionUserAction(payload) {
   const now = new Date().toISOString();
   if (op === 'clear_penalty') {
     await db.collection('users').doc(userId).update({
-      data: { no_show_count: 0, banned_until: '', updated_at: now },
+      // ban_source 一并清空：管理标记的封禁必须随解除动作一起消失，
+      // 否则 login 的孤儿封禁自愈会因 ban_source==='admin' 而跳过清理
+      data: { no_show_count: 0, banned_until: '', ban_source: '', updated_at: now },
     });
     return ok({ user_id: userId }, '已解除禁约并清零违规次数');
   }
   if (op === 'unban') {
-    await db.collection('users').doc(userId).update({ data: { banned_until: '', updated_at: now } });
+    await db.collection('users').doc(userId).update({ data: { banned_until: '', ban_source: '', updated_at: now } });
     return ok({ user_id: userId }, '已解除禁约');
   }
   const hours = Math.min(Math.max(Number(payload.hours) || 24, 1), 720);
   const bannedUntil = new Date(Date.now() + hours * 3600 * 1000).toISOString();
-  await db.collection('users').doc(userId).update({ data: { banned_until: bannedUntil, updated_at: now } });
+  // ban_source='admin'：标记这是管理员手动封禁（区别于违约自动封禁）。
+  // login 的「孤儿封禁自愈」只清违约归零的自动封禁，见到 admin 标记会跳过——
+  // 否则管理端封禁会在用户下次登录时被当成残留洗掉（2026-09-27 真实事故）。
+  await db.collection('users').doc(userId).update({ data: { banned_until: bannedUntil, ban_source: 'admin', updated_at: now } });
   return ok({ user_id: userId, banned_until: bannedUntil }, `已封禁 ${hours} 小时`);
 }
 
@@ -1281,8 +1286,14 @@ async function actionSetRoomGeo(payload) {
   const nowIso = new Date().toISOString()
 
   if (payload.clear === true) {
-    delete meta.geo
-    await db.collection('categories').doc(roomId).update({ data: { metadata: meta, updated_at: nowIso } })
+    // ⚠️ 血泪坑（2026-09-27 真实事故）：不能「读全文 → delete meta.geo → 整对象回写」。
+    // 云数据库 update 对对象字段是**合并（merge）**而非替换——被 delete 掉的 geo 键
+    // 在合并时原样保留，管理端提示「已关闭」但围栏仍然生效、学生照样被 200 米拦住。
+    // 必须用点路径 + _.remove() 精确删除该子字段；测试 mock 对整对象是替换语义，
+    // 所以这类 bug 本地测试全绿、只有真机才暴露（mock 无法完全复刻云端合并语义）。
+    await db.collection('categories').doc(roomId).update({
+      data: { 'metadata.geo': _.remove(), updated_at: nowIso },
+    })
     return ok({ room_id: roomId, enabled: false }, '已关闭该自习室的位置签到')
   }
 

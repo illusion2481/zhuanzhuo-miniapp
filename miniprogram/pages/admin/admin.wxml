@@ -255,6 +255,11 @@
       <!-- 卡 1：选择房间 -->
       <view class="ops-card">
         <view class="card-title">选择房间</view>
+        <!-- ⚠️ 错误必须在这里露出：卡2/卡3都包在 rooms.length>0 里，
+             若 adminOps 未部署 / 鉴权失败 / 调用报错，房间列表为空，
+             不在这里渲染 checkinError 的话用户只会看到「暂无可设置的房间」，
+             分不清「真没数据」还是「云端调用挂了」 -->
+        <view wx:if="{{checkinError}}" class="seat-msg seat-msg--error">{{checkinError}}</view>
         <view wx:if="{{checkinRooms.length === 0}}" class="seat-msg">暂无可设置的房间，请先新增自习室</view>
         <block wx:if="{{checkinRooms.length > 0}}">
           <view class="ci-room-btns">

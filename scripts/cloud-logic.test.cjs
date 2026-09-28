@@ -94,7 +94,10 @@ function applyPatch(target, data) {
         if (typeof node[p] !== 'object' || node[p] === null) node[p] = {}
         node = node[p]
       }
-      node[parts[parts.length - 1]] = v
+      if (v && typeof v === 'object' && v.__remove) delete node[parts[parts.length - 1]]
+      else node[parts[parts.length - 1]] = v
+    } else if (v && typeof v === 'object' && v.__remove) {
+      delete target[k]
     } else if (v && typeof v === 'object' && v.__inc !== undefined) {
       target[k] = (typeof target[k] === 'number' ? target[k] : 0) + v.__inc
     } else {
@@ -153,6 +156,7 @@ const mockDb = {
     inc: (v) => ({ __inc: v }),
     exists: (v) => ({ __exists: v }),
     neq: (v) => ({ __neq: v }),
+    remove: () => ({ __remove: true }),
     and: (...args) => {
       const list = Array.isArray(args[0]) ? args[0] : args
       return Object.assign({}, ...list)
@@ -173,6 +177,11 @@ const mockDb = {
             if (!r) throw new Error('doc not found: ' + id)
             applyPatch(r, data)
             return { stats: { updated: 1 } }
+          },
+          async set({ data }) {
+            // 真实 SDK：doc(id).set 覆盖写入 / 不存在时创建（login 等会用到）
+            store[id] = { _id: id, ...JSON.parse(JSON.stringify(data)) }
+            return { _id: id }
           },
           async remove() {
             if (!store[id]) throw new Error('doc not found: ' + id)
@@ -1144,6 +1153,20 @@ async function testAdminOpsRoomGeo() {
 
   res = await fn.main({ action: 'setRoomGeo', room_id: 'geo-room', clear: true })
   expect('clear 后关闭围栏', res.success && !store['geo-room'].metadata.geo, JSON.stringify(res))
+
+  // 端到端：关闭围栏后签到必须放行（2026-09-27 事故——mock 整对象是替换语义、
+  // 云端是合并语义，导致「关闭成功提示 + 围栏仍然生效」只在真机暴露）
+  store['geo-rec2'] = {
+    _id: 'geo-rec2', user_id: OWNER_HASH, record_type: 'reservation', status: 'pending_checkin',
+    room_id: 'geo-room', seat_id: 'A-2', payload: {},
+    start_at: iso(-600e3), end_at: iso(3600e3), created_at: iso(-900e3), updated_at: iso(-900e3),
+  }
+  const prevRequire2 = process.env.CHECKIN_REQUIRE_CODE
+  process.env.CHECKIN_REQUIRE_CODE = '0'
+  const ck2 = await checkin.main({ record_id: 'geo-rec2' }) // 不带定位 → 若围栏还在会被 GEO_REQUIRED 拒
+  expect('★ 关闭围栏后签到放行（不再要求定位）', ck2.success && store['geo-rec2'].status === 'active', JSON.stringify(ck2))
+  if (prevRequire2 === undefined) delete process.env.CHECKIN_REQUIRE_CODE
+  else process.env.CHECKIN_REQUIRE_CODE = prevRequire2
 }
 
 // ============ checkin：地理围栏（防「拍照远程签到」） ============
@@ -1747,15 +1770,117 @@ async function testLoginBanFields() {
   store[LID] = {
     _id: LID, open_id_hash: LID, nick_name: '阿强', role: 'student',
     no_show_count: 3, banned_until: new Date(Date.now() + 3600e3).toISOString(),
+    waiver_total_used: 2,
     created_at: iso(0), updated_at: iso(0),
   }
   const res = await fn.main({})
   expect('login 返回 noShowCount=3', res.success && res.data.noShowCount === 3, JSON.stringify(res.data))
   expect('login 返回 bannedUntil', res.success && !!res.data.bannedUntil, JSON.stringify(res.data))
+  expect('login 透出 waiverTotalUsed=2', res.success && res.data.waiverTotalUsed === 2, JSON.stringify(res.data))
 
   WX_OPENID = 'login-new'
   const res2 = await fn.main({})
   expect('新用户 noShowCount 默认 0', res2.success && res2.data.noShowCount === 0, JSON.stringify(res2.data))
+  expect('新用户 waiverTotalUsed 默认 0', res2.success && res2.data.waiverTotalUsed === 0, JSON.stringify(res2.data))
+
+  // —— 邀请绑定（2026-09-27 放宽）：老用户也能通过分享卡绑定邀请人 ——
+  const INV = hash('inv-alpha')
+  store[INV] = { _id: INV, open_id_hash: INV, invite_credit: 0 }
+  // 老用户、从未绑定、从未领奖 → 绑定成功
+  WX_OPENID = 'login-old'
+  const OLD = hash('login-old')
+  store[OLD] = { _id: OLD, open_id_hash: OLD, nick_name: '老用户', created_at: iso(0), updated_at: iso(0) }
+  const r3 = await fn.main({ inviter: INV })
+  expect('老用户分享卡进入 → invited_by 绑定成功', r3.success && store[OLD].invited_by === INV, JSON.stringify(store[OLD]))
+  // 已绑定过 → 不改绑（防反复刷分）
+  const INV2 = hash('inv-beta')
+  store[INV2] = { _id: INV2, open_id_hash: INV2, invite_credit: 0 }
+  await fn.main({ inviter: INV2 })
+  expect('已绑定过邀请人 → 拒绝改绑', store[OLD].invited_by === INV && store[OLD].invited_by !== INV2, JSON.stringify(store[OLD]))
+  // 已领过邀请奖励 → 也不再绑定
+  WX_OPENID = 'login-rewarded'
+  const RW = hash('login-rewarded')
+  store[RW] = { _id: RW, open_id_hash: RW, invite_rewarded: true, created_at: iso(0), updated_at: iso(0) }
+  await fn.main({ inviter: INV })
+  expect('已领过邀请奖励 → 不再绑定', !store[RW].invited_by, JSON.stringify(store[RW]))
+  // 自邀防护（老用户路径同样生效）
+  WX_OPENID = 'login-self'
+  const SF2 = hash('login-self')
+  store[SF2] = { _id: SF2, open_id_hash: SF2, created_at: iso(0), updated_at: iso(0) }
+  await fn.main({ inviter: SF2 })
+  expect('老用户自邀被拒', !store[SF2].invited_by, JSON.stringify(store[SF2]))
+
+  // 孤儿封禁自愈：违约次数已归零但 banned_until 仍在未来（旧版 useCredit 残留）→ 登录时解除
+  WX_OPENID = 'login-orphan-ban'
+  const OB = hash('login-orphan-ban')
+  store[OB] = {
+    _id: OB, open_id_hash: OB, no_show_count: 0,
+    banned_until: iso(2 * 3600e3), // 2 小时后才解封（残留状态）
+    created_at: iso(0), updated_at: iso(0),
+  }
+  const rOB = await fn.main({})
+  expect('孤儿封禁 → 登录自愈解除', rOB.success && rOB.data.bannedUntil === '', JSON.stringify(rOB.data))
+  expect('孤儿封禁 → 库中 banned_until 已清', store[OB].banned_until === '', JSON.stringify(store[OB]))
+  // 正常封禁（违约次数 > 0）不受自愈影响
+  WX_OPENID = 'login-real-ban'
+  const RB = hash('login-real-ban')
+  store[RB] = {
+    _id: RB, open_id_hash: RB, no_show_count: 2,
+    banned_until: iso(3600e3), created_at: iso(0), updated_at: iso(0),
+  }
+  const rRB = await fn.main({})
+  expect('正常封禁 → 不被自愈误清', rRB.success && rRB.data.bannedUntil === store[RB].banned_until, JSON.stringify(rRB.data))
+  // 管理员手动封禁（ban_source='admin' + 违约 0 次）→ 自愈必须跳过，否则后台封禁一登录就被洗掉
+  WX_OPENID = 'login-admin-ban'
+  const AB = hash('login-admin-ban')
+  store[AB] = {
+    _id: AB, open_id_hash: AB, nick_name: '被管理封禁', role: 'student',
+    no_show_count: 0,
+    banned_until: iso(24 * 3600e3), // 24 小时后才解封
+    ban_source: 'admin',
+    created_at: iso(0), updated_at: iso(0),
+  }
+  const rAB = await fn.main({})
+  expect('管理封禁 → 登录自愈跳过不清', rAB.success && rAB.data.bannedUntil === store[AB].banned_until, JSON.stringify(rAB.data))
+
+  WX_OPENID = 'owner-001'
+}
+
+// ============ 邀请裂变：登录绑定即发奖（2026-09-27 需求：进入即奖励，不要求到店签到） ============
+async function testInviteRewardChain() {
+  console.log('\n== 邀请裂变：绑定即发奖（无需到店签到）==')
+  const loginFn = require(path.join(process.cwd(), 'cloudfunctions', 'login', 'index.js'))
+  const checkinFn = require(path.join(process.cwd(), 'cloudfunctions', 'checkin', 'index.js'))
+  const t = checkinFn.__test
+  resetStore()
+
+  // 1) 邀请人先注册（无 inviter）
+  WX_OPENID = 'chain-inviter'
+  const IH = hash('chain-inviter')
+  const rInv = await loginFn.main({ nickName: '邀请人' })
+  expect('邀请人注册成功', rInv.success && store[IH], JSON.stringify(rInv.data))
+  expect('邀请人初始邀请积分=0', store[IH].invite_credit === 0, JSON.stringify(store[IH]))
+
+  // 2) 被邀人通过分享卡（带 inviter）注册 → 绑定 invited_by + **登录即发奖**
+  WX_OPENID = 'chain-invitee'
+  const EH = hash('chain-invitee')
+  const rEv = await loginFn.main({ inviter: IH, nickName: '被邀人' })
+  expect('被邀人注册成功', rEv.success && store[EH], JSON.stringify(rEv.data))
+  expect('被邀人 invited_by 绑定到邀请人', store[EH] && store[EH].invited_by === IH, JSON.stringify(store[EH]))
+  // —— 关键：登录即发奖，不要求签到 ——
+  expect('登录即标记已奖励', store[EH].invite_rewarded === true, JSON.stringify(store[EH]))
+  expect('登录即给邀请人 +1', store[IH].invite_credit === 1, JSON.stringify(store[IH]))
+
+  // 3) 被邀人后续首次签到 → 因已奖励标记，checkin 幂等跳过（不再重复加）
+  try {
+    await t.rewardInviterOnFirstCheckin(EH, new Date().toISOString())
+  } catch (e) {
+    expect('rewardInviter 执行无异常', false, (e && e.message) || String(e))
+  }
+  expect('签到不重复加邀请人积分（幂等）', store[IH].invite_credit === 1, JSON.stringify(store[IH]))
+  // 被邀人自身不因「登录发奖」路径 +1（仅邀请人得）；签到路径已被标记跳过
+  expect('被邀人自身邀请积分保持 0', store[EH].invite_credit === 0, JSON.stringify(store[EH]))
+
   WX_OPENID = 'owner-001'
 }
 
@@ -1956,6 +2081,13 @@ async function testAdminOps() {
   // —— 用户信用：解除禁约 ——
   res = await fn.main({ action: 'userAction', user_id: 'users-u9', op: 'clear_penalty' })
   expect('userAction: 解除禁约并清零违规', res.success && store['users-u9'].no_show_count === 0 && !store['users-u9'].banned_until, JSON.stringify(res))
+
+  // —— 用户信用：手动封禁（必须打 admin 标记，否则 login 自愈会把它当残留洗掉）——
+  res = await fn.main({ action: 'userAction', user_id: 'users-u9', op: 'ban', hours: 24 })
+  expect('userAction: 封禁 24h → banned_until 在未来', res.success && Date.parse(store['users-u9'].banned_until || '') > Date.now(), JSON.stringify(res))
+  expect('userAction: 封禁打上 ban_source=admin', store['users-u9'].ban_source === 'admin', JSON.stringify(store['users-u9']))
+  res = await fn.main({ action: 'userAction', user_id: 'users-u9', op: 'unban' })
+  expect('userAction: 解封 → banned_until 与标记同清', res.success && !store['users-u9'].banned_until && store['users-u9'].ban_source === '', JSON.stringify(store['users-u9']))
 
   // —— 房间管理 ——
   res = await fn.main({ action: 'upsertRoom', name: '咖啡角', code: 'coffee', building: 'C', floor: '2F' })
@@ -2445,7 +2577,8 @@ async function testUseCredit() {
   const useCredit = require(path.join(process.cwd(), 'cloudfunctions', 'useCredit', 'index.js'))
   const U = OWNER_HASH // 用 owner 作为被测试用户
 
-  // 提前写入用户：owner 有 3 积分、2 违约、已用 0 次
+  // 提前写入用户：owner 有 3 积分、2 违约、已用 0 次、因 2 次违约被封禁 2 小时
+  const ban2h = new Date(Date.now() + 2 * 3600 * 1000).toISOString()
   store[U] = {
     _id: U,
     open_id_hash: U,
@@ -2454,6 +2587,7 @@ async function testUseCredit() {
     no_show_count: 2,
     waiver_total_used: 0,
     waiver_log: [],
+    banned_until: ban2h,
   }
 
   let r = await useCredit.main({})
@@ -2462,6 +2596,20 @@ async function testUseCredit() {
   expect('违约 -=1 (2→1)', r.data && r.data.no_show_count === 1, `no_show=${r.data && r.data.no_show_count}`)
   expect('已用次数 +1 (0→1)', r.data && r.data.waived_total === 1, `waived=${r.data && r.data.waived_total}`)
   expect('留痕写入 waiver_log', Array.isArray(store[U].waiver_log) && store[U].waiver_log.length === 1, JSON.stringify(store[U].waiver_log))
+  // 关键回归：封禁随违约次数重算（2 次→1 次 = 从 2h 缩短为 30min，而非原封不动）
+  expect('抵免后封禁缩短(2次→1次=30min)', r.data && r.data.banned_until && new Date(r.data.banned_until).getTime() < new Date(ban2h).getTime() && new Date(r.data.banned_until).getTime() > Date.now(), `ban2h=${ban2h} got=${r.data && r.data.banned_until}`)
+  expect('用户档 banned_until 已同步更新', store[U].banned_until && store[U].banned_until === r.data.banned_until, JSON.stringify(store[U].banned_until))
+
+  // 再抵免一次：no_show 1→0 → 违约清零 → 解除封禁（banned_until 置空）
+  r = await useCredit.main({})
+  expect('违约清零 → 解除封禁(banned_until 为空)', r.success === true && r.data && r.data.banned_until === '' && r.data.no_show_count === 0, JSON.stringify(r.data))
+
+  // 管理员手动封禁（ban_source=admin）不被抵免穿透：违约清零也保留管理封禁
+  const adminBan = new Date(Date.now() + 24 * 3600 * 1000).toISOString()
+  store[U] = { _id: U, invite_credit: 3, no_show_count: 2, waiver_total_used: 0, banned_until: adminBan, ban_source: 'admin', waiver_log: [] }
+  r = await useCredit.main({})
+  expect('管理封禁 + 抵免 → 封禁保持不动', r.success === true && store[U].banned_until === adminBan && store[U].ban_source === 'admin', JSON.stringify(store[U]))
+  expect('管理封禁 + 抵免 → 违约与积分正常扣减', store[U].no_show_count === 1 && store[U].invite_credit === 2, JSON.stringify(store[U]))
 
   // 重置为「无违约但有积分」的干净状态
   store[U].invite_credit = 5
@@ -2542,6 +2690,8 @@ async function testUseCredit() {
   await testSubmitReview()
   resetStore()
   await testLoginBanFields()
+  resetStore()
+  await testInviteRewardChain()
   resetStore()
   await testPausedSeatOccupancy()
   resetStore()

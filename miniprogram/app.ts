@@ -77,6 +77,20 @@ App<IAppOption>({
   },
 
   /**
+   * 小程序已在后台运行时，用户再次点开分享卡 → 走 onShow（而非 onLaunch）。
+   * 必须在这里也捕获 inviter，否则「程序在后台、再点新分享卡」的进入路径会漏掉绑定。
+   * （冷启动走 onLaunch，热进入走 onShow，两条路径都要捕获）
+   */
+  onShow(options?: { query?: Record<string, string | undefined> }) {
+    // 热进入（程序已在后台，再点分享卡）→ onShow 才触发。这里捕获 inviter，
+    // 并补一次 login 把暂存的 inviter 消费掉（login 内的 consumeInviter 会读取并清除），
+    // 否则「后台再点分享卡」的进入路径下邀请人永远不会被绑定。
+    if (this.captureInviter(options)) {
+      login().catch(() => {});
+    }
+  },
+
+  /**
    * 版本更新：检测到新版本时用 wx.showModal 引导用户重启。
    * 注意：getUpdateManager 需基础库 2.9.1+，低版本静默跳过。
    */
@@ -130,16 +144,18 @@ App<IAppOption>({
   /**
    * 邀请参数捕获：分享卡片 / 朋友圈进入时，options.query.inviter 即邀请人 userId。
    * 只在本地未绑定过邀请人时暂存（防止被覆盖），随后随 login 上报云函数绑定。
+   * @returns 是否**本次新捕获**到一个邀请人（用于 onShow 决定是否补一次 login 消费）
    */
-  captureInviter(options?: { query?: Record<string, string | undefined> }) {
+  captureInviter(options?: { query?: Record<string, string | undefined> }): boolean {
     try {
       const inviter = (options && options.query && options.query.inviter) || '';
-      if (!inviter) return;
-      if (wx.getStorageSync(INVITER_KEY)) return; // 已有邀请人，不覆盖
-      if (inviter === getUser()?.userId) return; // 自己邀自己不记
+      if (!inviter) return false;
+      if (wx.getStorageSync(INVITER_KEY)) return false; // 已有邀请人，不覆盖
+      if (inviter === getUser()?.userId) return false; // 自己邀自己不记
       wx.setStorageSync(INVITER_KEY, inviter);
+      return true;
     } catch {
-      /* 存储不可用则静默 */
+      return false; // 存储不可用则静默
     }
   },
 });

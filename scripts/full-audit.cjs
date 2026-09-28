@@ -32,12 +32,17 @@ let WX_OPENID = 'audit-owner-001'
 const sha = (s) => crypto.createHash('sha256').update(String(s)).digest('hex').slice(0, 32)
 const iso = (offsetMs) => new Date(Date.now() + offsetMs).toISOString()
 
-/** 北京时间偏移；预约用例必须落在「未来且同日」，否则会被跨天/超时口径干扰 */
+/** 北京时间；预约用例以「真实 now 为中心」构造 start/end，
+ * 保证 checkin 用真实时钟比较时始终落在签到窗口（start±15min）内。
+ * 超过营业时段（22:00+）才把基准挪到次日凌晨：此时签到类用例已被
+ * IN_BIZ_HOURS 跳过，改基准仅影响「预约创建」等不依赖真实 now 的用例。
+ * ⚠️ 分界必须与 IN_BIZ_HOURS（<22）对齐，否则 19:00–21:59 会出现
+ * 「BASE 已挪次日、checkin 仍跑真实 now」→ 误报「尚未到签到时间」。 */
 const BJ = 8 * 3600e3
 const BASE_MS = (() => {
   const now = Date.now()
   const bj = new Date(now + BJ)
-  if (bj.getUTCHours() < 19) return now
+  if (bj.getUTCHours() < 22) return now
   return Date.UTC(bj.getUTCFullYear(), bj.getUTCMonth(), bj.getUTCDate() + 1, 1, 0, 0) - BJ
 })()
 /** 营业时段守卫：checkin/leaveSeat/cancel「端到端」用例依赖真实时钟落在 start±15min 窗口内。
@@ -730,7 +735,7 @@ async function auditAiNotify() {
 
   // 「模板 ID 有两份真源」是一致性风险：**授权**用前端那份、**发送**用云端那份，
   // 一旦不一致就会出现「授权了 A 模板、却用 B 模板发送」→ 用户永远收不到通知。
-  const cfg = require('fs').readFileSync(path.join(ROOT, 'miniprogram/config/subscribe.ts'), 'utf8')
+  const cfg = require('fs').readFileSync(path.join(ROOT, 'miniprogram/subpages/config/subscribe.ts'), 'utf8')
   const cloudSrc = require('fs').readFileSync(CLOUD('notify'), 'utf8')
   // 两边书写格式不同（云端 `id: process.env.TPL_X || '真实ID'`，前端 `key: '真实ID'`）：
   // 按 key 定位后，取该片段里第一个 30 位以上的引号串（模板 ID 固定 43 位）。
@@ -748,7 +753,7 @@ async function auditAiNotify() {
     JSON.stringify(mismatch.map((k) => ({ k, fe: pick(cfg, k), be: pick(cloudSrc, k) }))))
   if (mismatch.length) {
     finding('P1', A, '订阅模板 ID 存在两份真源且不一致',
-      'miniprogram/config/subscribe.ts 与 cloudfunctions/notify/index.js 各存一份模板 ID，不一致时会出现「授权用 A、发送用 B」。' +
+      'miniprogram/subpages/config/subscribe.ts 与 cloudfunctions/notify/index.js 各存一份模板 ID，不一致时会出现「授权用 A、发送用 B」。' +
       '当前不一致项：' + JSON.stringify(mismatch))
   }
   void uid

@@ -45,7 +45,7 @@ $home-outline-border: #D9D9D9;  // 次按钮描边灰
   color: #FFFFFF;
   background: #FA8C16;
   border-radius: 50%;
-  font-size: 24rpx;
+  font-size: $font-size-sm;
 }
 
 .login-banner__body {
@@ -104,7 +104,7 @@ $home-outline-border: #D9D9D9;  // 次按钮描边灰
   }
   
   .header-title {
-    font-size: 48rpx;          // 【改动】44 → 48，更醒目
+    font-size: $font-size-hero;          // 【改动】44 → 48，更醒目
     font-weight: 700;
     color: $home-blue;
     letter-spacing: 2rpx;
@@ -134,7 +134,7 @@ $home-outline-border: #D9D9D9;  // 次按钮描边灰
   }
   
   .icon-gear__inner {
-    font-size: 40rpx;
+    font-size: $font-size-xl;
     color: rgba(255, 255, 255, 0.9);
     line-height: 1;
   }
@@ -201,7 +201,7 @@ $home-outline-border: #D9D9D9;  // 次按钮描边灰
 }
 
 .icon-gear__inner {
-  font-size: 40rpx;
+  font-size: $font-size-xl;
   color: rgba(255, 255, 255, 0.9);
   line-height: 1;
 }
@@ -395,7 +395,7 @@ $home-outline-border: #D9D9D9;  // 次按钮描边灰
 }
 
 .plan-submit__arrow {
-  font-size: 40rpx;
+  font-size: $font-size-xl;
   color: #fff;
   font-weight: 700;
   line-height: 1;
@@ -446,7 +446,7 @@ $home-outline-border: #D9D9D9;  // 次按钮描边灰
 }
 
 .recommend-entry__arrow {
-  font-size: 40rpx;
+  font-size: $font-size-xl;
   color: $home-text-light;
   font-weight: 700;
   line-height: 1;
@@ -650,7 +650,7 @@ $home-outline-border: #D9D9D9;  // 次按钮描边灰
 }
 
 .plan-modal-title {
-  font-size: 40rpx;
+  font-size: $font-size-xl;
   font-weight: 700;
   color: #FFFFFF;
   letter-spacing: 1rpx;
@@ -827,7 +827,7 @@ $home-outline-border: #D9D9D9;  // 次按钮描边灰
 
 /** 来源标签：AI = 蓝绿渐变小签；降级 = 琥珀描边签 */
 .plan-courses__tag {
-  font-size: 20rpx;
+  font-size: $font-size-2xs;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -878,7 +878,7 @@ $home-outline-border: #D9D9D9;  // 次按钮描边灰
   border-radius: 12rpx;
   background: rgba(22, 119, 255, 0.08);
   color: $home-blue;
-  font-size: 22rpx;
+  font-size: $font-size-xs;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -910,7 +910,7 @@ $home-outline-border: #D9D9D9;  // 次按钮描边灰
 }
 
 .plan-course__level {
-  font-size: 20rpx;
+  font-size: $font-size-2xs;
   line-height: 1;
   color: $home-teal;
   background: rgba(29, 181, 181, 0.1);
@@ -932,7 +932,7 @@ $home-outline-border: #D9D9D9;  // 次按钮描边灰
 }
 
 .plan-course__tag {
-  font-size: 20rpx;
+  font-size: $font-size-2xs;
   line-height: 1;
   color: #5A7A8C;
   background: #F2F7FA;
@@ -999,7 +999,7 @@ $home-outline-border: #D9D9D9;  // 次按钮描边灰
 
 .checkin-card__badge {
   align-self: flex-start;
-  font-size: 20rpx;
+  font-size: $font-size-2xs;
   line-height: 1;
   color: $home-teal;
   background: rgba(29, 181, 181, 0.12);

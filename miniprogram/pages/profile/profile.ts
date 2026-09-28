@@ -1,4 +1,4 @@
-import { login, getCachedUser, getLoginError, onLoginErrorChange, clearLoginError, isProfileComplete } from '../../services/auth';
+import { login, getCachedUser, getLoginError, onLoginErrorChange, clearLoginError, isProfileComplete, refreshUser } from '../../services/auth';
 import { fetchStudySummary, listMyReservations } from '../../services/record';
 import { useCreditWaive } from '../../services/credit';
 import { showError, showBusinessError } from '../../utils/error';
@@ -72,6 +72,27 @@ Page({
     // 订阅全局登录错误变化：app.ts 静默登录失败时 setLoginError → 实时刷新横幅
     onLoginErrorChange(() => this.setData({ loginError: getLoginError() || '' }));
     this.setData({ loginError: getLoginError() || '' });
+    // 关键：邀请积分 / 连续签到 / 禁约状态等字段只在云端更新，本地缓存不会自动同步。
+    // 好友签到为你 +1 后，若不主动从云端拉取，「我的」页会一直显示过期的旧积分。
+    // 这里在页面可见时静默刷新（失败则保留本地值，不阻塞页面）。
+    this.refreshProfileSilently();
+  },
+
+  /**
+   * 静默从云端刷新档案：让邀请积分 / 连续签到 / 禁约状态始终最新。
+   * 背景：checkin 在好友首次签到时给邀请人 +1 invite_credit，但该值只写在云端，
+   * 本地缓存要等冷启动才会刷新。这里在「我的」页每次可见时补一次云端拉取，
+   * 避免用户看到「积分没增加」的过期值（2026-09-27 实踩）。
+   * 仅在已登录时发起，避免无谓的注册调用。
+   */
+  async refreshProfileSilently() {
+    if (!getCachedUser()) return;
+    try {
+      const user = await refreshUser();
+      this.applyUser(user);
+    } catch {
+      /* 云端暂不可用则保留本地值，不报错、不闪 */
+    }
   },
 
   /** 横幅一键重试：重新登录，成功后自动清除横幅 */
@@ -105,10 +126,11 @@ Page({
       role: user.role,
       contactSessionFrom: buildContactSessionFrom(user),
       noShowCount: user.noShowCount || 0,
-      banText: this.computeBanText(user.bannedUntil),
+      banText: this.computeBanText(user.bannedUntil, user.banSource),
       inviteCredit: user.inviteCredit || 0,
       waiverTotalUsed: user.waiverTotalUsed || 0,
-      waiveAble: (user.inviteCredit || 0) > 0 && (user.noShowCount || 0) > 0,
+      // 只要还有积分就允许点击；没有违约时点击给出明确提示（死灰按钮会让用户以为功能坏了）
+      waiveAble: (user.inviteCredit || 0) > 0,
       profileIncomplete: !isProfileComplete(user),
       streak: user.streak || 0,
       totalCheckin: user.totalCheckin || 0,
@@ -211,7 +233,7 @@ Page({
     return { char, tone: hash % 5 };
   },
 
-  computeBanText(bannedUntil?: string): string {
+  computeBanText(bannedUntil?: string, banSource?: string): string {
     if (!bannedUntil) return '';
     const until = new Date(bannedUntil).getTime();
     if (Number.isNaN(until) || until <= Date.now()) return '';
@@ -219,8 +241,10 @@ Page({
     if (mins >= 60) {
       const h = Math.floor(mins / 60);
       const m = mins % 60;
+      if (banSource === 'admin') return `管理员已限制预约：${h} 小时 ${m} 分后自动解除，或由管理员提前解除`;
       return `因违约过多，${h} 小时 ${m} 分内不可预约`;
     }
+    if (banSource === 'admin') return `管理员已限制预约：${mins} 分钟后自动解除，或由管理员提前解除`;
     return `因违约过多，${mins} 分钟内不可预约`;
   },
 
@@ -303,6 +327,16 @@ Page({
    */
   async onWaiveCredit() {
     if (this.data.waiveSaving) return;
+    // 没有违约可抵：明确告知（积分保留），不进入确认弹窗、不调云函数
+    if ((this.data.noShowCount || 0) <= 0) {
+      wx.showModal({
+        title: '暂无违约可抵免',
+        content: '你当前没有违约记录，积分会一直保留；下次违约时可直接在这里用积分抵免。',
+        showCancel: false,
+        confirmText: '知道了',
+      });
+      return;
+    }
     const confirmed = await new Promise<boolean>((resolve) => {
       wx.showModal({
         title: '使用积分抵免',
@@ -318,9 +352,17 @@ Page({
     try {
       const res = await useCreditWaive();
       if (res.can_waive) {
-        // 成功后云端 no_show_count / invite_credit 已变，刷新本地档案
+        // 成功后云端 no_show_count / invite_credit / banned_until 已变，刷新本地档案
         const fresh = await login();
         this.applyUser(fresh);
+        // 兜底：直接同步抵免返回的封禁状态，确保「解除/缩短封禁」立即在页面生效
+        if (typeof res.banned_until !== 'undefined') {
+          this.setData({ bannedUntil: res.banned_until, banText: this.computeBanText(res.banned_until) });
+        }
+        // 兜底：已抵免次数直接取云函数返回值（login 未透出 waiverTotalUsed 时也能立即显示）
+        if (typeof res.waived_total === 'number') {
+          this.setData({ waiverTotalUsed: res.waived_total });
+        }
         wx.showToast({ title: '已用 1 积分抵免 1 次违约', icon: 'success' });
       } else {
         // 不可抵免：云端已返回原因（无违约 / 积分不足 / 达上限）
@@ -333,7 +375,10 @@ Page({
         showBusinessError(reason);
       }
     } catch (err) {
-      showError(err, '抵免失败，请重试');
+      // ⚠️ 必须用 showBusinessError：云函数未部署/调用失败时 errMsg 很长
+      // （如「云函数 useCredit 调用失败 FunctionName parameter...」），
+      // showError 会截成 7 个字一闪而过，用户只会觉得「点了没反应」。
+      showBusinessError(err, '抵免失败，请重试');
     } finally {
       this.setData({ waiveSaving: false });
     }

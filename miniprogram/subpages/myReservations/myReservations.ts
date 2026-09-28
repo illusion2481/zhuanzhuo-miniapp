@@ -13,15 +13,15 @@ import {
   notifyReservationConfirmed,
   requestReservationConfirmSubscribes,
   requestCancelSubscribes,
-} from '../../services/notify';
-import type { SubscribeOutcome } from '../../utils/subscribe';
-import { formatDateTime } from '../../utils/time';
+} from '../services/notify';
+import type { SubscribeOutcome } from '../utils/subscribe';
+import { formatDateTime } from '../utils/time';
 import { showBusinessError, showError } from '../../utils/error';
 import { checkinWithCode } from '../../utils/checkin';
 import { toSeatDisplayName } from '../../utils/seatName';
 import type { BusinessRecord, ReservationStatus } from '../../types/record';
 import { CHECKIN_TIMEOUT_MINUTES, LEAVE_TIMEOUT_MINUTES } from '../../config/constants';
-import { setActiveReservation } from '../../store/reservation';
+import { setActiveReservation } from '../store/reservation';
 import { trackCheckinDone, trackExtend } from '../../utils/analytics';
 
 type TabKey = 'all' | 'pending_checkin' | 'active' | 'history';

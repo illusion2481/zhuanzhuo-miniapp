@@ -1,4 +1,4 @@
-import { callCloud } from './cloud';
+import { callCloud } from '../../services/cloud';
 
 /** 反馈类型（与 submitFeedback 云函数 CATEGORIES 保持一致） */
 export const FEEDBACK_CATEGORIES = ['功能建议', '问题反馈', '投诉', '其他'] as const;

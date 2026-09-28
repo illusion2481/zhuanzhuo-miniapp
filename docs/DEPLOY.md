@@ -195,7 +195,8 @@ $env:CODING_PLAN_API_KEY="你的Token"; node scripts/check-ai-key.cjs
    `aiClient` 已内置 **10 分钟结果缓存**（同一份 prompt 直接复用），但仍要避免每次进页面都实时生成。
    额度耗尽后全部静默降级为基础推荐/基础总结——**不报错，只是标签变成「基础总结」**。
 2. **部署必须带 `shared` 目录**：两个 AI 云函数都 `require('./shared/aiClient')` 与 `./shared/validator`。
-   上传时选「**上传并部署：所有文件**」；只传 `index.js` 会 `MODULE_NOT_FOUND` → 直接降级。
+   右键选「**上传并部署：云端安装依赖（不上传 node_modules）**」——它会**上传目录里全部代码文件（含 `shared/`）**，依赖由云端按 `package.json` 安装。
+   ⚠️ 反例：选「所有文件」且本地没装 node_modules → 云端没有 `wx-server-sdk` → 每次调用 `-504002 Cannot find module 'wx-server-sdk'`。
 3. **运行时需 Node 18+**：`aiClient` 用全局 `fetch`。低版本运行时要装 `node-fetch`，否则抛 `AI_NO_FETCH`。
 
 **验证是否真的生效**
@@ -314,12 +315,11 @@ expireRecords ──→ 定时清理（建议配云函数定时触发）
 10. `aiRecommend`
 11. `aiSummary`
 12. `adminStats`
-13. `aiChat`（**「我的 → 联系客服」的 AI 客服**；目录含 `shared/`，右键「上传并部署：所有文件」）
+13. `aiChat`（**「我的 → 联系客服」的 AI 客服**；目录含 `shared/`，同样用「云端安装依赖」即可，`shared/` 会被一并上传）
 14. `seedData`（**最后**，作为数据初始化工具）
 
 每个云函数上传时建议：
-- ✅ 勾选 **「云端安装依赖」**
-- ✅ 勾选 **「上传时运行 npm install」**（如果函数使用了 npm 包）
+- ✅ 统一右键 **「上传并部署：云端安装依赖（不上传 node_modules）」**——本地没装依赖时，选「所有文件」云端不会自动装依赖，必炸 `-504002 Cannot find module 'wx-server-sdk'`
 - ❌ 不要勾选「测试覆盖率」（仅本地开发用）
 
 > ⚠️ **AI 类云函数（`aiChat` / `aiRecommend` / `aiSummary`）的超时，必须够「两次尝试」**：
@@ -337,7 +337,7 @@ expireRecords ──→ 定时清理（建议配云函数定时触发）
 > 于是既没有降级文案、也没有半行日志，前端只拿到一个 reject，显示「响应超时」。
 > 看起来像「网络问题」，实际是超时配置数学不对。
 >
-> 三个函数的目录里已加 `config.json`（按上表），**部署时右键「上传并部署：所有文件」会带上它**；
+> 三个函数的目录里已加 `config.json`（按上表），**两种「上传并部署」方式都会带上它**；
 > 若部署后仍超时，到 云开发控制台 → 云函数 → 对应函数 → 配置 手动改成上表的值
 > （**控制台优先级最高，改完即时生效，无需重新部署**）。
 
@@ -550,7 +550,7 @@ node -e "console.log(require('crypto').createHash('sha256').update('openid 明�
    补上 `CODING_PLAN_API_KEY`（改完约 5~10 秒自动重启，无需重新上传）。
    **日志里会顺带打印「本函数可见的相关环境变量名」**（只打印名字、不打印值），
    用来区分「名字拼错」和「配到了别的函数」。
-3. 改了**代码**或 `shared/` 才需要重新部署（右键「上传并部署：所有文件」）；只改环境变量不用
+3. 改了**代码**或 `shared/` 才需要重新部署（右键「上传并部署：云端安装依赖」）；只改环境变量不用
 
 AI 失败时前端有**兜底逻辑**（按座位属性排序 / 基础统计文案），不会让页面崩溃。
 
@@ -672,7 +672,7 @@ IDE → 云开发 → 云函数 → expireRecords → 测试
 
 ### 代码已就绪，只差你一步
 
-- 前端：`reservation.ts` 在预约成功后调用 `utils/subscribe.ts → requestSubscribe()` 拉授权，并通过 `services/notify.ts` 调 `notify` 云函数发推送。
+- 前端：`reservation.ts` 在预约成功后调用 `subpages/utils/subscribe.ts → requestSubscribe()` 拉授权，并通过 `subpages/services/notify.ts` 调 `notify` 云函数发推送。
 - 云函数：新增 `cloudfunctions/notify`（action: `send`），调用 `cloud.openapi.subscribeMessage.send`。
 - 未配置模板时整套链路**静默跳过，不报错、不阻塞**，所以现在就能上传使用。
 
@@ -680,7 +680,7 @@ IDE → 云开发 → 云函数 → expireRecords → 测试
 
 1. 微信公众平台 → **功能 → 订阅消息 → 我的模板 → 新增模板**，选/申请合适的模板
    （如「预约成功通知」「签到提醒」）。一次性订阅即可，长期订阅需类目支持。
-2. 把拿到的模板 ID 填到 `miniprogram/config/subscribe.ts` 的 `SUBSCRIBE_TEMPLATES`
+2. 把拿到的模板 ID 填到 `miniprogram/subpages/config/subscribe.ts` 的 `SUBSCRIBE_TEMPLATES`
    （`reservationConfirmed` / `checkinReminder`）。
 3. **或**配置到 `notify` 云函数的环境变量 `TPL_RESERVATION_CONFIRMED`（优先级同上）。
 4. 对齐 `miniprogram/services/notify.ts` 里 `data` 的 **关键词 key**（如 `thing1/time2/thing3`）

@@ -17,7 +17,7 @@
  *      - 结束晚于打烊     → 截断到当日打烊时间；
  *      - 截断后不足 MIN_BOOKING_MINUTES → 顺延到次日开放时间。
  */
-import { MIN_BOOKING_MINUTES } from '../config/constants';
+import { MIN_BOOKING_MINUTES } from '../../config/constants';
 
 function pad(n: number): string {
   return n < 10 ? `0${n}` : String(n);

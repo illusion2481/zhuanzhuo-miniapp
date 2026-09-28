@@ -43,8 +43,8 @@ function periodStartIso(period) {
   return new Date(bj.getTime() - 8 * 3600 * 1000).toISOString()
 }
 
-/** 批量取用户昵称（按 _id 分片，避免一次 in 过多） */
-async function batchUserNames(ids) {
+/** 批量取用户昵称 + 头像（按 _id 分片，避免一次 in 过多） */
+async function batchUserInfo(ids) {
   const map = {}
   for (let i = 0; i < ids.length; i += 20) {
     const chunk = ids.slice(i, i + 20)
@@ -55,10 +55,12 @@ async function batchUserNames(ids) {
         .limit(20)
         .get()
       for (const d of (res.data || [])) {
-        map[d._id] = (d.nick_name && String(d.nick_name).trim()) || '学友' + String(d._id).slice(-4)
+        const name = (d.nick_name && String(d.nick_name).trim()) || '学友' + String(d._id).slice(-4)
+        const avatar = (d.avatar_url && String(d.avatar_url).trim()) || ''
+        map[d._id] = { name, avatar }
       }
     } catch (e) {
-      /* 昵称缺失不影响榜单 */
+      /* 昵称/头像缺失不影响榜单 */
     }
   }
   return map
@@ -97,9 +99,11 @@ exports.main = async (event = {}) => {
         }))
 
       const ids = list.map((r) => r.user_id)
-      const nameMap = await batchUserNames(ids)
+      const infoMap = await batchUserInfo(ids)
       for (const r of list) {
-        r.name = nameMap[r.user_id] || '学友' + String(r.user_id).slice(-4)
+        const info = infoMap[r.user_id]
+        r.name = info ? info.name : '学友' + String(r.user_id).slice(-4)
+        r.avatar = info ? info.avatar : ''
       }
 
       // 当前用户名次（不在前 50 时单独补算）
@@ -169,9 +173,11 @@ exports.main = async (event = {}) => {
       }))
 
     const ids = list.map((r) => r.user_id)
-    const nameMap = await batchUserNames(ids)
+    const infoMap = await batchUserInfo(ids)
     for (const r of list) {
-      r.name = nameMap[r.user_id] || '学友' + String(r.user_id).slice(-4)
+      const info = infoMap[r.user_id]
+      r.name = info ? info.name : '学友' + String(r.user_id).slice(-4)
+      r.avatar = info ? info.avatar : ''
     }
 
     // 当前用户名次

@@ -14,6 +14,8 @@ export interface UserProfile {
   noShowCount?: number;
   /** 禁约截止时间（ISO）；为空表示未禁约 */
   bannedUntil?: string;
+  /** 封禁来源：'admin'=管理员手动封禁（积分不可抵免），''=违约自动封禁 */
+  banSource?: string;
   /** 连续签到天数（checkin 云函数维护） */
   streak?: number;
   /** 累计签到次数 */

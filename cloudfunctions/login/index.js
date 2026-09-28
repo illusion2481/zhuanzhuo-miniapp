@@ -24,6 +24,26 @@ function banMinutesFor(count) {
 }
 
 /**
+ * 邀请绑定即时发奖（2026-09-27 需求变更）：
+ * 好友通过分享卡进入并完成登录（新老用户均可），邀请人立即 +1 邀请积分，
+ * **不再要求到店签到**。被邀人档由调用方标记 `invite_rewarded=true` 幂等，
+ * 防止与 checkin 旧路径重复发奖。
+ *
+ * 邀请人 _id 与本人 openIdHash 同口径（32 位 hex），直接 .doc(inviter) 更新；
+ * 邀请人必定已存在（先注册才能分享），若文档缺失 .update 静默无操作，catch 兜底。
+ */
+async function awardInviterOnBind(inviter) {
+  try {
+    await db
+      .collection(USERS)
+      .doc(inviter)
+      .update({ data: { invite_credit: _.inc(1), updated_at: new Date().toISOString() } })
+  } catch (e) {
+    console.error('[login] 邀请人发奖失败 inviter=', inviter, e)
+  }
+}
+
+/**
  * 惰性结算本人的超时预约（幂等）。
  *
  * 为什么放在 login：`expireRecords` 依赖云函数定时触发器，触发器没部署或失效时，
@@ -149,6 +169,8 @@ function toProfile(doc) {
     role: doc.role || 'student',
     noShowCount: doc.no_show_count || 0,
     bannedUntil: doc.banned_until || '',
+    // 封禁来源：'admin'=管理员手动封禁（不能积分抵免、不参与自愈），''=违约自动封禁
+    banSource: doc.ban_source || '',
     // 连续签到激励：streak=连续天数，total_checkin=累计签到，last_checkin_date=最近签到日
     streak: typeof doc.streak === 'number' ? doc.streak : 0,
     totalCheckin: typeof doc.total_checkin === 'number' ? doc.total_checkin : 0,
@@ -157,6 +179,8 @@ function toProfile(doc) {
     lastCheckinDate: doc.last_checkin_date || '',
     // 邀请裂变：invite_credit 邀请积分；invited_by 我的邀请人
     inviteCredit: typeof doc.invite_credit === 'number' ? doc.invite_credit : 0,
+    // 已用积分抵免次数（useCredit 维护 waiver_total_used；不透出则前端徽章恒显 0）
+    waiverTotalUsed: typeof doc.waiver_total_used === 'number' ? doc.waiver_total_used : 0,
     invitedBy: doc.invited_by || '',
     phone: doc.phone || '',
     /** 首次完善资料的 ISO 时间；为空 = 未完成引导（前端据此弹出「完善资料」） */
@@ -228,6 +252,8 @@ exports.main = async (event = {}) => {
         total_checkin: 0,
         total_checkout: 0,
         last_checkin_date: '',
+        // 邀请裂变：邀请积分显式初始化为 0（避免文档缺字段时 undefined 歧义）
+        invite_credit: 0,
         created_at: now,
         updated_at: now,
       }
@@ -236,6 +262,9 @@ exports.main = async (event = {}) => {
         // 防自邀 & 防注入：邀请人不得等于本人，且要求形如 32 位 hex 哈希
         if (inviter !== openIdHash && /^[a-f0-9]{32}$/i.test(inviter)) {
           createData.invited_by = inviter.toLowerCase()
+          createData.invite_rewarded = true
+          // 进入即发奖：好友通过分享卡加载进来，邀请人立即 +1（不再要求到店签到）
+          await awardInviterOnBind(inviter.toLowerCase())
         }
       }
       try {
@@ -253,6 +282,22 @@ exports.main = async (event = {}) => {
       if (avatarUrl) patch.avatar_url = avatarUrl
       // 首次完善资料：置位后不再弹引导页（每次重复提交只是刷新时间，幂等）
       if (completeProfile) patch.profile_completed_at = now
+      // 邀请绑定（老用户补挂，2026-09-27）：原先只在首次建号时绑定，导致
+      // 「邀请好友加次数」对任何老用户永远无效。现放宽为：从未绑定过邀请人
+      // 且从未领过邀请奖励的用户，点分享卡进入后也可绑定——每位好友最多
+      // 促成一次奖励（invite_rewarded 幂等），防自邀 / hex 校验与建号路径同规。
+      if (
+        inviter &&
+        inviter !== openIdHash &&
+        /^[a-f0-9]{32}$/i.test(inviter) &&
+        !doc.invited_by &&
+        doc.invite_rewarded !== true
+      ) {
+        patch.invited_by = inviter.toLowerCase()
+        patch.invite_rewarded = true
+        // 进入即发奖：老用户补绑同样即时给邀请人 +1
+        await awardInviterOnBind(inviter.toLowerCase())
+      }
       await col.doc(openIdHash).update({ data: patch })
       doc = { ...doc, ...patch }
     }
@@ -272,6 +317,26 @@ exports.main = async (event = {}) => {
         .update({ data: { no_show_count: nextCount, banned_until: bannedUntil, updated_at: now } })
         .catch(() => {})
       doc = { ...doc, no_show_count: nextCount, banned_until: bannedUntil }
+    }
+
+    // 自愈孤儿封禁（2026-09-27）：旧版 useCredit 抵免只减违约次数、不清 banned_until，
+    // 留下「违约次数已归零、封禁却仍在」的不一致状态——前端抵免按钮因 no_show_count=0
+    // 永久禁用，用户被无限期锁死（真实事故）。封禁只应由 expireRecords 在违约时设置，
+    // 次数归零后仍处于未来的封禁必然是残留，这里顺手解除（不消耗积分，幂等）。
+    // ⚠️ 管理员手动封禁（ban_source='admin'）不在此列：它不依赖违约次数，只能由
+    // 管理员解除或到期自然解除——否则会在用户下次登录时被当成残留洗掉（真实事故）。
+    if (
+      doc.banned_until &&
+      Number.isFinite(Date.parse(doc.banned_until)) &&
+      Date.parse(doc.banned_until) > Date.now() &&
+      (doc.no_show_count || 0) <= 0 &&
+      doc.ban_source !== 'admin'
+    ) {
+      await col
+        .doc(openIdHash)
+        .update({ data: { banned_until: '', ban_source: '', updated_at: now } })
+        .catch(() => {})
+      doc = { ...doc, banned_until: '', ban_source: '' }
     }
 
     return ok(toProfile(doc), '登录成功')

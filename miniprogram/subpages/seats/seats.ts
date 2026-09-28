@@ -5,12 +5,12 @@ import { createReservation, listMyReservations } from '../../services/record';
 import {
   requestReservationConfirmSubscribes,
   notifyReservationConfirmed,
-} from '../../services/notify';
+} from '../services/notify';
 import { toSeatDisplayName, seatFeatures } from '../../utils/seatName';
 import type { SeatDef } from '../../types/room';
 import type { BusinessRecord } from '../../types/record';
 import { floorPlans } from '../../config/floorPlans';
-import { planBookingWindow, windowToIso } from '../../utils/bookingWindow';
+import { planBookingWindow, windowToIso } from '../utils/bookingWindow';
 import { trackRoomEnter, trackSeatTap, trackBookingConfirm } from '../../utils/analytics';
 
 /** 座位状态轮询间隔（ms）：watch 断连/不支持时的兜底 */

@@ -7,7 +7,7 @@ import {
   closeFeedback,
   FEEDBACK_CATEGORIES,
   type MyFeedbackItem,
-} from '../../services/feedback';
+} from '../services/feedback';
 
 /** 工单状态文案：replied 是「已回复、等你确认」的中间态，不是结束 */
 const STATUS_TEXT: Record<string, string> = {

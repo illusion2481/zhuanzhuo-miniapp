@@ -5,7 +5,7 @@
  *
  * 为什么要单独一条核对：
  *   同一套「夹到开放时段」的规则被实现了三次 ——
- *     前端 miniprogram/utils/bookingWindow.ts（决定给用户看什么时段）
+ *     前端 miniprogram/subpages/utils/bookingWindow.ts（决定给用户看什么时段）
  *     cloudfunctions/createReservation/index.js（决定下单放不放行）
  *     cloudfunctions/updateReservation/index.js（决定改约放不放行）
  *   任一处走样，用户就会看到「页面显示 20:33-22:00，提交后却变成别的时段」
@@ -33,7 +33,7 @@ fs.rmSync(TMP, { recursive: true, force: true })
 fs.mkdirSync(TMP, { recursive: true })
 const emit = spawnSync(
   process.execPath,
-  [tsc, 'miniprogram/utils/bookingWindow.ts', '--outDir', TMP,
+  [tsc, 'miniprogram/subpages/utils/bookingWindow.ts', '--outDir', TMP,
     '--module', 'commonjs', '--target', 'es2019', '--skipLibCheck', '--moduleResolution', 'node'],
   { cwd: ROOT, encoding: 'utf8' },
 )
@@ -43,7 +43,7 @@ if (emit.status !== 0) {
 }
 // 项目根 package.json 是 "type":"module"，临时目录里声明 commonjs 才能 require
 fs.writeFileSync(path.join(TMP, 'package.json'), '{"type":"commonjs"}')
-const fe = require(path.join(TMP, 'utils', 'bookingWindow.js'))
+const fe = require(path.join(TMP, 'subpages', 'utils', 'bookingWindow.js'))
 
 // ---------- 2. 从云函数源码里抽出真实 clamp 实现 ----------
 function extractFn(src, name) {

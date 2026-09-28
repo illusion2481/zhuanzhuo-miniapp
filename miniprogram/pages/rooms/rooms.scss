@@ -144,7 +144,7 @@ $home-border: #E8F4F4;
 
 /* 座位数超过渲染上限时的「+N」补位标记 */
 .mini-seat-more {
-  font-size: 20rpx;
+  font-size: $font-size-2xs;
   line-height: 18rpx;
   color: $home-text-light;
   flex-shrink: 0;

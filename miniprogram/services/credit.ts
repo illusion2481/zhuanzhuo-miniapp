@@ -12,6 +12,8 @@ export interface CreditWaiveResult {
   can_waive: boolean;
   /** 剩余可用抵免次数 */
   remaining_waives: number;
+  /** 抵免后的封禁截止时间（空串 = 已解除封禁） */
+  banned_until?: string;
 }
 
 /**

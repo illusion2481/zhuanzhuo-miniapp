@@ -216,7 +216,7 @@ export async function deleteStudyRecord(recordId: string): Promise<void> {
   }
 }
 
-export async function listMyStudies(options: { status?: string; limit?: number; since?: string } = {}): Promise<BusinessRecord[]> {
+export async function listMyStudies(options: { status?: string; limit?: number; since?: string; skip?: number; page?: number } = {}): Promise<BusinessRecord[]> {
   const res = await callCloud<BusinessRecord[]>('studyRecord', { action: 'list', ...options });
   if (!res.success) {
     throw new Error(res.message || '获取学习记录失败');
@@ -301,7 +301,9 @@ export interface RankEntry {
   rank: number;
   user_id: string;
   name: string;
-  /** 前端生成的头像字符（取昵称首字） */
+  /** 真实头像（云存储 fileID 或 http 链接）；空串时前端降级为昵称首字字符头像 */
+  avatar?: string;
+  /** 前端生成的头像字符（取昵称首字，仅当 avatar 为空时展示） */
   char?: string;
   focus_sec: number;
   pomodoro: number;

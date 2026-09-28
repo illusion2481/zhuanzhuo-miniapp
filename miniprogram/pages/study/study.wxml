@@ -110,6 +110,36 @@
       </view>
     </view>
 
+    <!-- ═══ 学习打卡日历（月历 + 连击） ═══ -->
+    <view wx:if="{{!monthEmpty}}" class="month-section">
+      <view class="section-title chart-head-row">
+        <text>学习打卡月历</text>
+        <text class="chart-meta">本月 {{monthMinutes}} 分钟 · 打卡 {{monthActiveDays}} 天</text>
+      </view>
+      <view class="month-block">
+        <view class="month-head">
+          <text class="month-title">{{monthTitle}}</text>
+          <text wx:if="{{streakDays > 0}}" class="streak-badge">🔥 连续 {{streakDays}} 天</text>
+        </view>
+        <view class="month-week-row">
+          <text wx:for="{{weekLabels}}" wx:key="*this" class="month-week-label">{{item}}</text>
+        </view>
+        <view class="month-grid">
+          <view
+            wx:for="{{monthCells}}"
+            wx:key="index"
+            class="month-cell month-cell--{{item.inMonth ? 'in' : 'pad'}} month-cell--l{{item.level}} {{item.today ? 'month-cell--today' : ''}}"
+          >
+            <text wx:if="{{item.inMonth}}" class="month-day">{{item.day}}</text>
+            <text wx:if="{{item.inMonth && item.minutes > 0}}" class="month-min">{{item.minutes}}</text>
+          </view>
+        </view>
+        <view class="month-legend">
+          <text class="month-legend__hint">颜色越深表示当天专注越久，连续学习天数用 🔥 标记</text>
+        </view>
+      </view>
+    </view>
+
     <view class="section-title">最近学习</view>
 
     <view class="recent-list list-in">
@@ -154,7 +184,7 @@
           </view>
           <view class="ai-summary-actions">
             <button class="btn btn--medium btn--primary" loading="{{aiSummaryLoading}}" disabled="{{aiSummaryLoading}}" bind:tap="onFetchAiSummary">重新生成</button>
-            <button class="btn btn--medium btn--ghost" bind:tap="onCloseAiSummary">收起</button>
+            <button class="btn btn--medium btn--ghost" bindtap="onCloseAiSummary">收起</button>
           </view>
         </view>
       </block>

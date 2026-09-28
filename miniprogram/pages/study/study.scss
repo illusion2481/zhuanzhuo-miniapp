@@ -122,7 +122,7 @@
 }
 
 .stat-value {
-  font-size: 40rpx;
+  font-size: $font-size-xl;
   font-weight: 600;
   color: $color-primary;
   font-variant-numeric: tabular-nums;
@@ -192,7 +192,7 @@
 .chart-value {
   height: 30rpx;
   line-height: 30rpx;
-  font-size: 20rpx;
+  font-size: $font-size-2xs;
   font-weight: 600;
   color: $color-primary;
 }
@@ -234,6 +234,134 @@
   &--future {
     color: $color-text-faint;
   }
+}
+
+/* ═══ 学习打卡日历（月历 + 连击） ═══ */
+.month-section {
+  margin: 0 $spacing-lg;
+}
+
+.month-block {
+  @include surface-block;
+  padding: $spacing-md;
+}
+
+.month-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+}
+
+.month-title {
+  font-size: $font-size-md;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.streak-badge {
+  font-size: $font-size-xs;
+  color: #E8930C;
+  font-weight: 500;
+}
+
+/* 周表头：与月历同构的 7 列 grid，保证标签与格子逐列对齐 */
+.month-week-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6rpx;
+  margin-bottom: 8rpx;
+}
+
+.month-week-label {
+  text-align: center;
+  font-size: $font-size-2xs;
+  color: $color-text-faint;
+}
+
+/* 月历格子：必须是 7 列 grid。
+   血泪坑：这里曾用 flex-wrap + flex:1 1 0，42 个格子 basis 全为 0 可无限收缩，
+   全部挤进同一行（每格约 18rpx 宽），aspect-ratio 失效 → 渲染成一排密集数字+竖条。 */
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6rpx;
+}
+
+.month-cell {
+  aspect-ratio: 1;
+  /* 兜底：不支持 aspect-ratio 的旧 WebView 里避免塌陷成一条线 */
+  min-height: 80rpx;
+  border-radius: $radius-sm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  &--pad {
+    background: transparent;
+  }
+
+  &--in {
+    background: #EFF7F7;
+  }
+
+  /* 四档强度：无 / <30min / 30~90min / >90min */
+  &--l0 {
+    background: #F0FAFA;
+  }
+
+  &--l1 {
+    background: rgba(29, 181, 181, 0.18);
+  }
+
+  &--l2 {
+    background: rgba(29, 181, 181, 0.45);
+  }
+
+  &--l3 {
+    background: $color-primary;
+  }
+
+  /* 今天：圆形高亮（对齐系统日历的「今日圆牌」观感）；
+     仅无强度档时垫淡底，l2/l3 保持原深色背景不被覆盖 */
+  &--today {
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 4rpx $color-accent;
+
+    &.month-cell--l0,
+    &.month-cell--pad {
+      background: rgba(22, 119, 255, 0.10);
+    }
+  }
+}
+
+.month-day {
+  font-size: $font-size-xs;
+  color: $color-text;
+}
+
+.month-min {
+  font-size: $font-size-2xs;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.month-cell--l2 .month-day,
+.month-cell--l2 .month-min,
+.month-cell--l3 .month-day,
+.month-cell--l3 .month-min {
+  color: #fff;
+}
+
+/* 图例 */
+.month-legend {
+  margin-top: $spacing-sm;
+}
+
+.month-legend__hint {
+  font-size: $font-size-2xs;
+  color: $color-text-faint;
 }
 
 /* ═══ 最近学习列表 ═══ */
@@ -287,7 +415,7 @@
 .recent-goal {
   flex: 1;
   min-width: 0;
-  font-size: 28rpx;
+  font-size: $font-size-md;
   font-weight: 600;
   color: $color-text;
   overflow: hidden;

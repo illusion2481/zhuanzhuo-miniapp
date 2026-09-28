@@ -5,4 +5,4 @@
 export const CLOUD_ENV_ID = 'cloudbase-d1gehjncwca809f8c';
 
 /** 是否为开发模式（本地调试日志等） */
-export const IS_DEV = true;
+export const IS_DEV = false;

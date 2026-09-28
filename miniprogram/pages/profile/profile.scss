@@ -35,7 +35,7 @@
   color: #FFFFFF;
   background: #FA8C16;
   border-radius: 50%;
-  font-size: 24rpx;
+  font-size: $font-size-sm;
 }
 
 .login-banner__body {
@@ -96,7 +96,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40rpx;
+  font-size: $font-size-xl;
   font-weight: 700;
   // 在渐变头部上用白底青字，干净好认
   background: #ffffff;
@@ -159,7 +159,7 @@
   border-radius: 18rpx;
   background: $color-accent;
   color: #ffffff;
-  font-size: 20rpx;
+  font-size: $font-size-2xs;
   line-height: 36rpx;
   text-align: center;
   border: 3rpx solid #1DB5B5;

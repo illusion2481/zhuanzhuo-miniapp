@@ -75,6 +75,20 @@ interface DailyChartCell {
   future: boolean;
 }
 
+/** 月历格子：按「当天专注分钟数」分 4 档点亮，形成学习墙 */
+interface MonthCell {
+  /** YYYY-MM-DD（本地时区键，与 records 打点一致） */
+  key: string;
+  /** 日号；非本月的占位格为 0 */
+  day: number;
+  minutes: number;
+  /** 0=无记录 1=<30min 2=30~90min 3=>90min */
+  level: 0 | 1 | 2 | 3;
+  today: boolean;
+  /** 是否属于「本月」的正式格子（false = 首尾占位） */
+  inMonth: boolean;
+}
+
 const CHART_DAYS = 7;
 /** 切 tab 回本研究页时，距上次全量刷新小于该毫秒数则跳过（避免频繁 5 连发云函数） */
 const STUDY_REFRESH_DEBOUNCE_MS = 30_000;
@@ -102,6 +116,33 @@ function startOfWeekIso(d: Date = new Date()): string {
   const day = x.getDay() === 0 ? 7 : x.getDay();
   x.setDate(x.getDate() - (day - 1));
   return x.toISOString();
+}
+
+/** 本月 1 号 00:00（本地时区）→ 月历数据拉取起点 */
+function startOfMonthIso(d: Date = new Date()): string {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  x.setDate(1);
+  return x.toISOString();
+}
+
+/** 单页上限（与云端 MAX_LIMIT 一致） */
+const LIST_PAGE_SIZE = 100;
+
+/**
+ * 分页拉取本月学习记录全量（云函数单页 limit ≤100，月记录可能更多）。
+ * 按月首 since + skip 翻页直到不足一页，保证月历不丢天。
+ */
+async function listMonthRecords(sinceIso: string): Promise<BusinessRecord[]> {
+  const out: BusinessRecord[] = [];
+  let skip = 0;
+  for (;;) {
+    const rows = await listMyStudies({ since: sinceIso, limit: LIST_PAGE_SIZE, skip });
+    out.push(...rows);
+    if (rows.length < LIST_PAGE_SIZE || out.length >= 500) break;
+    skip += LIST_PAGE_SIZE;
+  }
+  return out;
 }
 
 function formatDuration(seconds: number): string {
@@ -194,6 +235,22 @@ Page({
     chartEmpty: true,
     loadError: '',
 
+    // ====== 学习打卡日历（月历 + 连击） ======
+    /** 月历标题：2026年9月 */
+    monthTitle: '',
+    /** 42 格（6 行 × 7 列）月历 */
+    monthCells: [] as MonthCell[],
+    /** 周表头（日一二三四五六） */
+    weekLabels: ['一', '二', '三', '四', '五', '六', '日'],
+    /** 连续打卡天数（截至今天，含今天） */
+    streakDays: 0,
+    /** 本月累计专注分钟 */
+    monthMinutes: 0,
+    /** 本月打卡天数 */
+    monthActiveDays: 0,
+    /** 月历加载失败 / 暂无数据时不展示整块（保持页面干净） */
+    monthEmpty: true,
+
     // ====== 番茄钟 ======
     pomodoroPresets: POMODORO_PRESETS,
     pomodoroRangeHint: `专注 1~${MAX_FOCUS_MIN} 分钟 · 休息 1~${MAX_BREAK_MIN} 分钟`,
@@ -227,6 +284,8 @@ Page({
   pomodoroConfig: normalizeConfig(null) as PomodoroConfig,
   pauseStartMs: 0 as number,
   pomodoroSyncing: false as boolean,
+  // 月历数据源：整月学习记录（raw），composeMonth 消费
+  monthRecords: [] as BusinessRecord[],
 
   onUnload() {
     this.clearTicker();
@@ -560,7 +619,8 @@ Page({
         week: StudySummary | null;
         recent: BusinessRecord[];
         weekRecords: BusinessRecord[];
-      } = { current: null, today: null, week: null, recent: [], weekRecords: [] };
+        monthRecords: BusinessRecord[];
+      } = { current: null, today: null, week: null, recent: [], weekRecords: [], monthRecords: [] };
 
       tasks.push(
         listMyStudies({ status: 'running', limit: 1 })
@@ -592,6 +652,13 @@ Page({
           .catch(() => { state.weekRecords = []; }),
       );
 
+      // 月历数据：整月全量（分页拉全，避免 100 条截断）
+      tasks.push(
+        listMonthRecords(startOfMonthIso())
+          .then((rows) => { state.monthRecords = rows; })
+          .catch(() => { state.monthRecords = []; }),
+      );
+
       await Promise.all(tasks);
 
       this.recentRecords = state.recent;
@@ -605,6 +672,7 @@ Page({
         this.restorePomodoro(state.current);
         this.runCatchUp(state.current);
       }
+      const month = this.composeMonth(state.monthRecords);
       this.setData({
         loading: false,
         current: state.current ? this.composeCurrentView(state.current) : null,
@@ -617,6 +685,12 @@ Page({
         recent: recentView,
         chart,
         chartEmpty: chart.every((c) => c.minutes === 0),
+        monthTitle: month.title,
+        monthCells: month.cells,
+        monthMinutes: month.minutes,
+        monthActiveDays: month.activeDays,
+        streakDays: month.streak,
+        monthEmpty: month.empty,
         loadError: '',
       });
       this._lastRefreshAt = Date.now();
@@ -954,6 +1028,87 @@ Page({
       today: b.today,
       future: b.future,
     }));
+  },
+
+  /**
+   * 生成「本月学习打卡日历」（6 行 × 7 列 + 首尾占位）。
+   * 数据源是整月 records，按「有学习记录的天」点亮，按分钟数分 4 档着色——
+   * 相比单纯的柱状图，月历让用户一眼看到「这个月哪几天在坚持」，
+   * 是学习墙 / 连击（streak）的视觉载体。
+   */
+  composeMonth(records: BusinessRecord[]): {
+    title: string;
+    cells: MonthCell[];
+    activeDays: number;
+    minutes: number;
+    streak: number;
+    empty: boolean;
+  } {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth();
+    const first = new Date(y, m, 1);
+    // 周一为周起始（中国习惯）：周一=0..周日=6
+    const lead = (first.getDay() + 6) % 7;
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const today = new Date(y, m, now.getDate());
+
+    // 按本地日期键聚合专注分钟
+    const minutesByDay = new Map<string, number>();
+    const dayKey = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    for (const r of records) {
+      const started = new Date(r.start_at || r.created_at);
+      if (Number.isNaN(started.getTime())) continue;
+      const k = dayKey(started);
+      const seg = payloadOf(r).actual_duration_sec || computeStudyActiveSeconds(r);
+      minutesByDay.set(k, (minutesByDay.get(k) || 0) + Math.floor(seg / 60));
+    }
+
+    const cells: MonthCell[] = [];
+    // 6 行 × 7 列 = 42 格，首行不足 7 天用上月占位，尾部补下月占位
+    for (let i = 0; i < 42; i += 1) {
+      const offset = i - lead + 1;
+      if (offset < 1 || offset > daysInMonth) {
+        cells.push({ key: '', day: 0, minutes: 0, level: 0, today: false, inMonth: false });
+        continue;
+      }
+      const d = new Date(y, m, offset);
+      const k = dayKey(d);
+      const minutes = minutesByDay.get(k) || 0;
+      const isToday = d.getTime() === today.getTime();
+      cells.push({
+        key: k,
+        day: offset,
+        minutes,
+        level: minutes <= 0 ? 0 : minutes < 30 ? 1 : minutes < 90 ? 2 : 3,
+        today: isToday,
+        inMonth: true,
+      });
+    }
+
+    // 连击 streak：从今天（或昨天，若今天还没学）往前数连续有记录的天数
+    let streak = 0;
+    const cursor = new Date(today.getTime());
+    // 今天尚未学习时，从昨天开始数（保留「昨天的连击」展示）
+    if (!(minutesByDay.get(dayKey(cursor)) || 0)) cursor.setDate(cursor.getDate() - 1);
+    for (;;) {
+      const k = dayKey(cursor);
+      if (!(minutesByDay.get(k) || 0)) break;
+      streak += 1;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+
+    const activeDays = cells.filter((c) => c.inMonth && c.minutes > 0).length;
+    const minutes = cells.reduce((s, c) => s + c.minutes, 0);
+    return {
+      title: `${y}年${m + 1}月`,
+      cells,
+      activeDays,
+      minutes,
+      streak,
+      empty: activeDays === 0,
+    };
   },
 
   onShareAppMessage() {
